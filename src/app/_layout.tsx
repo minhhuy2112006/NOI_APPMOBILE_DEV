@@ -1,5 +1,6 @@
+import { WelcomeScreen } from '../components/WelcomeScreen';
 import { useEffect, useState } from 'react';
-import { Animated, Image, StyleSheet } from 'react-native';
+import { Animated, StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -38,24 +39,18 @@ export default function RootLayout() {
 
   return (
     <>
-      <Stack screenOptions={{ headerStyle: { backgroundColor: theme.colors.background }, headerTintColor: theme.colors.primary, contentStyle: { backgroundColor: theme.colors.background } }}>
+      <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal', headerStyle: { backgroundColor: theme.colors.background }, headerTintColor: theme.colors.primary, contentStyle: { backgroundColor: theme.colors.background } }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="campaigns/[id]" options={{ title: 'Chi tiết chiến dịch', headerBackTitle: 'Quay lại' }} />
+        <Stack.Screen name="campaigns/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="contributions/[id]" options={{ headerShown: false}} />
       </Stack>
-      <StatusBar style="dark" hidden={welcomeVisible} />
+      <StatusBar style="dark" hidden={false} />
       {welcomeVisible && (
         <Animated.View
           accessibilityViewIsModal
           style={[styles.welcome, { opacity }]}
         >
-          <Image
-            source={require('../../assets/branding/welcome.png')}
-            style={styles.welcomeImage}
-            resizeMode="cover"
-            accessibilityLabel="NOI — Kết nối yêu thương"
-            onLoad={() => setImageReady(true)}
-            onError={() => setImageReady(true)}
-          />
+          <WelcomeScreen onReady={() => setImageReady(true)} />
         </Animated.View>
       )}
     </>
@@ -74,7 +69,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F1FC',
   },
 });
-
-
-
-

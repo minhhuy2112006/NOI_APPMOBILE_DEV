@@ -1,3 +1,4 @@
+import { walletSession } from './session';
 import { PageHeader } from '../../components/PageHeader';
 import { useRef, useState } from "react";
 import {
@@ -16,7 +17,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { PhuocGlow } from "./PhuocGlow";
 import { Button, Chip } from "../../components/ui";
 import { theme } from "../../theme/tokens";
-import { gifts, initialWallet, redeemGift, type Gift } from "./model";
+import { gifts, redeemGift, type Gift } from "./model";
 
 const format = (value: number) => value.toLocaleString("vi-VN");
 function ProductImage({ quadrant }: { quadrant: number }) {
@@ -54,7 +55,8 @@ export default function StoreScreen() {
     scroll.current?.scrollTo({ y: catalogY, animated: true });
   };
   const [category, setCategory] = useState("Tất cả");
-  const [wallet, setWallet] = useState(initialWallet);
+  const wallet = walletSession.useValue();
+  const setWallet = walletSession.set;
   const [panel, setPanel] = useState<"badges" | "history" | "gift" | null>(
     null,
   );
@@ -220,11 +222,12 @@ export default function StoreScreen() {
                           }}
                           style={({ pressed }) => [
                             s.redeem,
-                            pressed && { opacity: 0.7 },
+                            pressed && { opacity: 1 },
                           ]}
                         >
-                          <LinearGradient
-                            colors={["#9765F4", "#D75DBF"]}
+{({ pressed }) => <>
+<LinearGradient
+                            colors={(pressed ? theme.buttons.pressedGradient : theme.buttons.gradient)}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                             style={s.redeemInner}
@@ -237,7 +240,8 @@ export default function StoreScreen() {
                                   : "Đổi quà"}
                             </Text>
                           </LinearGradient>
-                        </Pressable>
+</>}
+</Pressable>
                       </View>
                     </View>
                   </View>
@@ -488,7 +492,7 @@ const s = StyleSheet.create({
   fill: { flex: 1 },
   content: {
     paddingHorizontal: 16,
-    paddingBottom: 6,
+    paddingBottom: 20,
     width: "100%",
     maxWidth: 680,
     alignSelf: "center",
@@ -584,7 +588,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
     padding: 10,
   },
-  redeemText: { fontSize: 14, fontWeight: "600", color: "#FFFFFF" },
+  redeemText: { fontSize: 14, fontWeight: "600", color: theme.buttons.primaryText },
   demo: {
     fontSize: 10,
     lineHeight: 16,

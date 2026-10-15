@@ -27,9 +27,24 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#F8F1FC",
-          "image": "./assets/branding/app-icon.png",
-          "imageWidth": 200,
+          "image": "./assets/branding/noi-emblem.png",
+          "imageWidth": 112,
           "resizeMode": "contain"
+        }
+      ],
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "NOI cần camera để chụp ảnh bằng chứng điểm danh.",
+          "microphonePermission": false,
+          "photosPermission": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "NOI cần vị trí hiện tại để kiểm tra bạn ở trong bán kính 100 m của hoạt động."
         }
       ]
     ]

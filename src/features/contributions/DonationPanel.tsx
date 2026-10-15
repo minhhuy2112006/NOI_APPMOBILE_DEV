@@ -1,14 +1,17 @@
+import { donationSession, type DonationEntry } from './session';
+import { theme } from '../../theme/tokens';
 import { useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Chip } from '../../components/ui';
 export type DonationTarget = { id: string; title: string };
 export type DonationFlow = { mode: 'donate' | 'history' | 'receipts' | 'recurring'; target?: DonationTarget } | null;
-type Entry = { id: string; target: string; amount: number; date: string };
+type Entry = DonationEntry;
 type Plan = { id: string; target: string; amount: number; frequency: string };
 const money = (amount: number) => amount.toLocaleString('vi-VN') + 'đ';
 export function DonationPanel({ flow, targets, onClose }: { flow: DonationFlow; targets: DonationTarget[]; onClose: () => void }) {
-  const [entries, setEntries] = useState<Entry[]>([]);
+  const entries = donationSession.useValue();
+  const setEntries = donationSession.set;
   const [plans, setPlans] = useState<Plan[]>([]);
   const [amount, setAmount] = useState('50000');
   const [targetId, setTargetId] = useState('reserve');
@@ -52,7 +55,7 @@ export function DonationPanel({ flow, targets, onClose }: { flow: DonationFlow; 
       <Button title={flow.mode === 'recurring' ? 'Lưu lịch đóng góp demo' : 'Xác nhận đóng góp demo'} onPress={submit} />
     </>}
     {notice ? <Text accessibilityLiveRegion="polite" style={{ color: '#397954', fontWeight: '600' }}>{notice}</Text> : null}
-    {(flow?.mode === 'history' || flow?.mode === 'receipts') && <>{entries.length === 0 ? <Text>Chưa có {flow.mode === 'history' ? 'đóng góp' : 'biên nhận'} demo. Hãy thử nút Đóng góp trên một chiến dịch.</Text> : entries.map(entry => <Pressable accessibilityRole="button" key={entry.id} onPress={() => setReceipt(entry)} style={card}><Text style={{ fontWeight: '700' }}>{entry.target}</Text><Text>{money(entry.amount)} · {entry.date}</Text><Text style={{ color: '#B63D8D' }}>Xem biên nhận demo ›</Text></Pressable>)}</>}
+    {(flow?.mode === 'history' || flow?.mode === 'receipts') && <>{entries.length === 0 ? <Text>Chưa có {flow.mode === 'history' ? 'đóng góp' : 'biên nhận'} demo. Hãy thử nút Đóng góp trên một chiến dịch.</Text> : entries.map(entry => <Pressable accessibilityRole="button" key={entry.id} onPress={() => setReceipt(entry)} style={card}><Text style={{ fontWeight: '700' }}>{entry.target}</Text><Text>{money(entry.amount)} · {entry.date}</Text><Text style={{ color: theme.buttons.text }}>Xem biên nhận demo ›</Text></Pressable>)}</>}
     {receipt && <View style={card}><Text style={{ fontWeight: '800' }}>BIÊN NHẬN MÔ PHỎNG</Text><Text>{receipt.id}</Text><Text>{receipt.target}</Text><Text>{money(receipt.amount)} · {receipt.date}</Text><Text>Không có giá trị xác nhận thanh toán hoặc chứng từ thuế.</Text></View>}
     {flow?.mode === 'recurring' && <><Text style={{ fontWeight: '700' }}>Lịch đã lưu ({plans.length})</Text>{plans.length === 0 && <Text>Chưa có lịch đóng góp định kỳ.</Text>}{plans.map(plan => <View key={plan.id} style={card}><Text style={{ fontWeight: '700' }}>{plan.target}</Text><Text>{money(plan.amount)} · {plan.frequency} · Chỉ mô phỏng</Text><Button title="Hủy lịch demo" onPress={() => setPlans(current => current.filter(item => item.id !== plan.id))} /></View>)}</>}
   </ScrollView></SafeAreaView></View></Modal>;
