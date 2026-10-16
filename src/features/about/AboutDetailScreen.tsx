@@ -1,3 +1,4 @@
+import ParticipationEditorial from "./ParticipationEditorial";
 import HowItWorksScreen from "./HowItWorksScreen";
 import IntroductionScreen from "./IntroductionScreen";
 import MissionScreen from "./MissionScreen";
@@ -439,6 +440,7 @@ export default function AboutDetailScreen() {
     return <StoriesScreen />;
   }
   
+  if (section === "join" || section === "standards") return <ParticipationEditorial kind={section} />;
   return <AboutPage key={section} section={section} />;
 }
 export function AboutPage({ section }: { section: string }) {

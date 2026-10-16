@@ -52,15 +52,6 @@ const menus: {
       "Chưa có đăng ký thực tế. Hãy khám phá các chiến dịch ở tab Chiến dịch. Đăng ký demo hiện chưa được lưu vào tài khoản.",
   },
   {
-    title: "Điểm danh",
-    subtitle: "Check-in, xem lịch sử tham gia",
-    icon: "calendar",
-    color: "#479779",
-    tint: "#E6F5ED",
-    detail:
-      "Chưa có lịch sử điểm danh. Check-in sẽ khả dụng khi tài khoản và chiến dịch được kết nối với hệ thống.",
-  },
-  {
     title: "Quyên góp",
     subtitle: "Theo dõi lịch sử và đóng góp của bạn",
     icon: "heart",
@@ -145,22 +136,20 @@ export default function AccountScreen() {
   );
   const { width, fontScale } = useWindowDimensions();
   const compact = width < 360 || fontScale > 1.2;
-  const edit = () => openAccount("edit");
   const openMenu = (index: number) => {
-    if (index === 2) {
-      router.push("/attendance");
-      return;
-    }
     const destinations = [
       "profile",
       "registrations",
-      null,
       "donations",
       "points",
       "support",
     ] as const;
+  
     const section = destinations[index];
-    if (section) openAccount(section);
+  
+    if (section) {
+      openAccount(section);
+    }
   };
   const logout = () =>
     Alert.alert(
@@ -263,15 +252,7 @@ export default function AccountScreen() {
                 </View>
                 <View style={s.profileCopy}>
                   <View style={s.nameRow}>
-                    <Text style={s.name}>{name}</Text>
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={edit}
-                      style={s.edit}
-                    >
-                      <Ionicons name="pencil" size={13} color="#615BB3" />
-                      <Text style={s.editText}>Chỉnh sửa</Text>
-                    </Pressable>
+                    <Text style={s.name}>{name}</Text> 
                   </View>
                   <View style={s.role}>
                     <Ionicons name="leaf" size={13} color={colors.primary} />
@@ -286,7 +267,7 @@ export default function AccountScreen() {
                   <Pressable
                     key={stat.label}
                     accessibilityRole="button"
-                    accessibilityLabel={`${stat.value} ${stat.label.replace("\n", " ")} — dữ liệu mẫu`}
+                    accessibilityLabel={`${stat.value} ${stat.label.replace("\n", " ")}`}
                     onPress={() => openMenu(stat.menu)}
                     style={[
                       s.stat,
@@ -462,16 +443,6 @@ const s = StyleSheet.create({
     flexWrap: "wrap",
   },
   name: { fontSize: 24, fontWeight: "700", color: colors.text, flexShrink: 1 },
-  edit: {
-    minHeight: 44,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 10,
-    borderRadius: 22,
-    backgroundColor: "#FFFFFFB3",
-  },
-  editText: { fontSize: 11, color: "#615BB3", fontWeight: "600" },
   role: {
     flexDirection: "row",
     gap: 4,

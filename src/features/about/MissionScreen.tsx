@@ -15,11 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, Stack } from "expo-router";
 import { useAssistantContext } from "../assistant/Assistant";
 
-import {
-  useFonts,
-  Lora_400Regular,
-  Lora_400Regular_Italic,
-} from "@expo-google-fonts/lora";
+
 
 const images = {
   seed: require("../../../assets/about/mission/mission-seed.png"),
@@ -50,12 +46,8 @@ function PinkCard({ children, scale }: PropsWithChildren<{ scale: number }>) {
 export default function MissionScreen() {
   const { width } = useWindowDimensions();
   const u = Math.min(width, 520) / 853;
-  const [fontsLoaded] = useFonts({
-    Lora_400Regular,
-    Lora_400Regular_Italic,
-  });
 
-  const s = styles(u, fontsLoaded);
+  const s = styles(u, false);
   const communitySize = Image.resolveAssetSource(images.community);
   const handsSize = Image.resolveAssetSource(images.hands);
 
