@@ -65,7 +65,7 @@ export default function AboutScreen() {
               <Ionicons
                 name="play"
                 size={28}
-                color={theme.buttons.primaryText}
+                color={theme.colors.text}
               />
             </View>
             <LinearGradient

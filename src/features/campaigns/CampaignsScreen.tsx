@@ -1,7 +1,9 @@
+import { useCampaignRegistration } from './registrationSession';
+import { ActionBackground as BrandActionBackground , ActionBackground, Button, Chip } from '../../components/ui';
+import { theme as buttonTheme , theme } from '../../theme/tokens';
 import { PageHeader } from "../../components/PageHeader";
-import { useCallback, useRef, useState, type ComponentProps } from "react";
+import { useRef, useState, type ComponentProps } from "react";
 import {
-  AppState,
   Image,
   KeyboardAvoidingView,
   Modal,
@@ -17,10 +19,10 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { useReducedMotion } from "react-native-reanimated";
-import { ActionBackground, Button, Chip } from "../../components/ui";
-import { theme } from "../../theme/tokens";
+
+
 import type { Campaign } from "./data";
 import { applyFilters, emptyFilters, options, type Filters } from "./filters";
 import {
@@ -82,11 +84,12 @@ function CampaignCard({
   const { fontScale } = useWindowDimensions();
   const badge = categoryStyles[item.category] ?? categoryStyles["Cộng đồng"];
   const full = item.registered >= item.capacity;
+  const joined = useCampaignRegistration(item.id);
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={
-        "Xem " + item.title + (full ? ", đã đủ số lượng" : "")
+        "Xem " + item.title + (joined ? ", đã đăng ký" : full ? ", đã đủ số lượng" : "")
       }
       onPress={() =>
         router.push({ pathname: "/campaigns/[id]", params: { id: item.id } })
@@ -184,11 +187,11 @@ function CampaignCard({
           </View>
         )}
         <Text
-          accessibilityElementsHidden={!full}
-          importantForAccessibility={full ? "auto" : "no-hide-descendants"}
+          accessibilityElementsHidden={!full && !joined}
+          importantForAccessibility={full || joined ? "auto" : "no-hide-descendants"}
           style={[s.fullLabel, { minHeight: 14 * fontScale }]}
         >
-          {full ? "Đã đủ số lượng" : " "}
+          {joined ? "Đã đăng ký" : full ? "Đã đủ số lượng" : " "}
         </Text>
       </View>
 </>}
@@ -209,15 +212,6 @@ export default function CampaignsScreen() {
   const [cityPicker, setCityPicker] = useState(false);
   const [slide, setSlide] = useState(0);
   const reducedMotion = useReducedMotion();
-  const [autoPlay, setAutoPlay] = useState(false);
-  const pauseUntil = useRef(0);
-  const direction = useRef(1);
-  const offset = useRef(0);
-  const touching = useRef(false);
-  
-  const pauseInteraction = () => {
-    pauseUntil.current = Date.now() + 7000;
-  };
   const carouselRef = useRef<ScrollView>(null);
   const { width, fontScale } = useWindowDimensions();
   const singleColumn = width < 350 || fontScale > 1.3;
@@ -242,42 +236,6 @@ export default function CampaignsScreen() {
     0,
     highlightCount * (cardWidth + 10) - 10 - viewportWidth,
   );
-  useFocusEffect(
-    useCallback(() => {
-      if (
-        !autoPlay ||
-        reducedMotion ||
-        showAll ||
-        open ||
-        cityPicker ||
-        maxOffset <= 0
-      )
-        return;
-      let frame = 0;
-      let last = 0;
-      const tick = (now: number) => {
-        const dt = last ? Math.min(now - last, 50) / 1000 : 0;
-        last = now;
-        if (
-          AppState.currentState === "active" &&
-          !touching.current &&
-          Date.now() >= pauseUntil.current
-        ) {
-          offset.current = Math.max(
-            0,
-            Math.min(maxOffset, offset.current + direction.current * 40 * dt),
-          );
-          if (offset.current >= maxOffset) direction.current = -1;
-          if (offset.current <= 0) direction.current = 1;
-          carouselRef.current?.scrollTo({ x: offset.current, animated: false });
-        }
-        frame = requestAnimationFrame(tick);
-      };
-      frame = requestAnimationFrame(tick);
-      return () => cancelAnimationFrame(frame);
-    }, [autoPlay, reducedMotion, showAll, open, cityPicker, maxOffset]),
-  );
-  
   const startFilter = () => {
     setDraft({ ...filters });
     setExpanded(null);
@@ -355,10 +313,10 @@ export default function CampaignsScreen() {
               accessibilityRole="button"
               accessibilityLabel={`Mở bộ lọc, ${activeCount} tiêu chí đang chọn`}
               onPress={startFilter}
-              style={s.filterButton}
-            >
-              <Ionicons name="options-outline" size={25} color="#172761" />
-              {activeCount > 0 && <Text style={s.count}>{activeCount}</Text>}
+              style={[s.filterButton, { overflow: 'hidden', borderColor: 'transparent' }]}
+            ><BrandActionBackground radius={0} disabled={false} />
+              <Ionicons name="options-outline" size={25} color={buttonTheme.buttons.primaryText} />
+              {activeCount > 0 && <Text style={[s.count, { color: buttonTheme.buttons.primaryText }]}>{activeCount}</Text>}
             </Pressable>
           </View>
           <ScrollView
@@ -419,9 +377,9 @@ export default function CampaignsScreen() {
             <Pressable
               accessibilityRole="button"
               onPress={clearFilters}
-              style={s.reset}
-            >
-              <Text style={s.moreText}>
+              style={[s.reset, { overflow: 'hidden', borderColor: 'transparent' }]}
+            ><BrandActionBackground radius={0} disabled={false} />
+              <Text style={[s.moreText, { color: buttonTheme.buttons.primaryText }]}>
                 {results.length} kết quả · Xóa bộ lọc
               </Text>
             </Pressable>
@@ -441,35 +399,17 @@ export default function CampaignsScreen() {
               <ScrollView
                 key={carouselKey}
                 onLayout={() => {
-                  offset.current = 0;
-                  direction.current = 1;
                   setSlide(0);
                   carouselRef.current?.scrollTo({ x: 0, animated: false });
                 }}
                 ref={carouselRef}
                 horizontal
-                onTouchStart={() => {
-                  touching.current = true;
-                  pauseInteraction();
-                }}
-                onTouchEnd={() => {
-                  touching.current = false;
-                  pauseInteraction();
-                }}
-                onTouchCancel={() => {
-                  touching.current = false;
-                  pauseInteraction();
-                }}
-                onScrollBeginDrag={pauseInteraction}
-                onMomentumScrollEnd={pauseInteraction}
                 snapToInterval={cardWidth + 10}
                 style={s.carouselViewport}
                 decelerationRate="fast"
                 showsHorizontalScrollIndicator={false}
                 onScroll={(event) => {
                   const x = event.nativeEvent.contentOffset.x;
-                  if (touching.current || Date.now() < pauseUntil.current)
-                    offset.current = Math.max(0, Math.min(maxOffset, x));
                   setSlide(
                     Math.min(
                       highlights.length - 1,
@@ -487,24 +427,6 @@ export default function CampaignsScreen() {
                 ))}
               </ScrollView>
               <View style={s.dots}>
-                {!reducedMotion && highlights.length > 1 && (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={
-                      autoPlay
-                        ? "Tạm dừng tự chuyển chiến dịch"
-                        : "Bật tự chuyển chiến dịch"
-                    }
-                    onPress={() => setAutoPlay(!autoPlay)}
-                    style={s.dotHit}
-                  >
-                    <Ionicons
-                      name={autoPlay ? "pause" : "play"}
-                      size={15}
-                      color="#BB3195"
-                    />
-                  </Pressable>
-                )}
                 {highlights
                   .slice(0, Math.ceil(maxOffset / (cardWidth + 10)) + 1)
                   .map((item, index) => (
@@ -514,7 +436,6 @@ export default function CampaignsScreen() {
                       accessibilityLabel={`Đến chiến dịch ${index + 1}`}
                       accessibilityState={{ selected: index === currentSlide }}
                       onPress={() => {
-                        pauseInteraction();
                         carouselRef.current?.scrollTo({
                           x: Math.min(maxOffset, index * (cardWidth + 10)),
                           animated: !reducedMotion,
@@ -539,11 +460,11 @@ export default function CampaignsScreen() {
               accessibilityRole="button"
               accessibilityLabel="Chọn địa phương"
               onPress={() => setCityPicker(true)}
-              style={s.cityButton}
-            >
-              <Ionicons name="location" size={16} color="#4C7AEB" />
-              <Text style={s.cityText}>{filters.city || localCity}</Text>
-              <Ionicons name="chevron-down" size={15} color="#5C6A80" />
+              style={[s.cityButton, { overflow: 'hidden', borderColor: 'transparent' }]}
+            ><BrandActionBackground radius={0} disabled={false} />
+              <Ionicons name="location" size={16} color={buttonTheme.buttons.primaryText} />
+              <Text style={[s.cityText, { color: buttonTheme.buttons.primaryText }]}>{filters.city || localCity}</Text>
+              <Ionicons name="chevron-down" size={15} color={buttonTheme.buttons.primaryText} />
             </Pressable>
           </View>
           {nearby.length ? (
@@ -1114,4 +1035,5 @@ const s = StyleSheet.create({
   },
   choices: { flexDirection: "row", flexWrap: "wrap", gap: 6, paddingTop: 8 },
 });
+
 

@@ -52,7 +52,7 @@ const menus: {
       "Chưa có đăng ký thực tế. Hãy khám phá các chiến dịch ở tab Chiến dịch. Đăng ký demo hiện chưa được lưu vào tài khoản.",
   },
   {
-    title: "Quyên góp",
+    title: "Lịch sử quyên góp",
     subtitle: "Theo dõi lịch sử và đóng góp của bạn",
     icon: "heart",
     color: "#D54C8D",

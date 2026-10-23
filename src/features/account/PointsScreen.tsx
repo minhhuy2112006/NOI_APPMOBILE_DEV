@@ -1,169 +1,55 @@
-import { useState } from "react";
-import { Text, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { ActionBackground as BrandActionBackground } from '../../components/ui';
+import { theme as buttonTheme } from '../../theme/tokens';
+import { useState, type ComponentProps } from 'react';
+import { ImageBackground, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router, Stack } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useFonts, Lora_400Regular, Lora_400Regular_Italic } from '@expo-google-fonts/lora';
+import { walletSession } from '../store/session';
+import { Sheet, Copy } from './AccountScreenShared';
 
-import { walletSession } from "../store/session";
-
-import {
-  Action,
-  Copy,
-  Heading,
-  Icon,
-  Layout,
-  Link,
-  Panel,
-  Quick,
-  Sheet,
-  s,
-} from "./AccountScreenShared";
-
+type Icon = ComponentProps<typeof Ionicons>['name'];
+const ways: { title: string; description: string; icon: Icon; color: string; destination: '/campaigns' | '/attendance' | '/contributions' | '/about' }[] = [
+  { title: 'Tham gia chiến dịch', description: 'Tham gia các hoạt động, chiến dịch vì cộng đồng.', icon: 'people', color: '#E65B9C', destination: '/campaigns' },
+  { title: 'Điểm danh đúng giờ', description: 'Ghi nhận tham gia trong thời gian hoạt động.', icon: 'calendar-outline', color: '#407DC8', destination: '/attendance' },
+  { title: 'Đóng góp tài chính', description: 'Ủng hộ các chương trình, dự án thiện nguyện.', icon: 'heart', color: '#E65B9C', destination: '/contributions' },
+  { title: 'Lan tỏa thông tin', description: 'Chia sẻ, giới thiệu những giá trị tốt đẹp.', icon: 'share-social', color: '#8661BA', destination: '/about' },
+];
+function CircleIcon({ name, color }: { name: Icon; color: string }) { return <View style={[s.iconCircle, { backgroundColor: color + '13' }]}><Ionicons name={name} size={23} color={color}/></View>; }
+function Lotus() {
+  return <View accessible={false} style={s.lotus}>{[-55, -28, 0, 28, 55].map((angle, index) => <View key={angle} style={[s.petal, { backgroundColor: index === 2 ? '#F7B1D6' : '#F8C4DF', transform: [{ rotate: `${angle}deg` }, { translateY: -7 }] }]}/>)}</View>;
+}
 export default function PointsScreen() {
   const wallet = walletSession.useValue();
-  const [sheet, setSheet] = useState<"details" | "history" | null>(null);
+  const [loaded] = useFonts({ Lora_400Regular, Lora_400Regular_Italic });
+  const serif = { fontFamily: loaded ? 'Lora_400Regular' : Platform.OS === 'ios' ? 'Georgia' : 'serif' };
+  const italic = { fontFamily: loaded ? 'Lora_400Regular_Italic' : Platform.OS === 'ios' ? 'Georgia' : 'serif', fontStyle: 'italic' as const };
+  const [expanded, setExpanded] = useState<string | null>('initial');
+  const [filter, setFilter] = useState('Tất cả');
+  const [sheet, setSheet] = useState<'filter' | 'info' | null>(null);
   const entries = [
-    ...wallet.history.map((e, i) => ({
-      key: `redeem-${i}`,
-      title: e.title,
-      description: "Đổi quà",
-      points: -e.points,
-    })),
-    {
-      key: "initial",
-      title: "Điểm khởi tạo",
-      description: "Số dư đầu phiên",
-      points: 1250,
-    },
-  ];
-  const history = (all: boolean) =>
-    (all ? entries : entries.slice(0, 3)).map((entry, i) => (
-      <View key={entry.key} style={[s.historyRow, i > 0 && s.divider]}>
-        <View style={s.historyIcon}>
-          <Icon name={entry.points > 0 ? "heart" : "gift"} size={30} />
-        </View>
-        <View style={s.historyCopy}>
-          <Text style={s.historyTitle}>{entry.title}</Text>
-          <Copy>{entry.description}</Copy>
-        </View>
-        <View style={s.pointsBadge}>
-          <Text style={s.pointsBadgeText}>
-            {entry.points > 0 ? "+" : "−"}
-            {Math.abs(entry.points).toLocaleString("vi-VN")} điểm
-          </Text>
-        </View>
-      </View>
-    ));
-  return (
-    <Layout title="Điểm Phước" rose help={() => setSheet("details")}>
-      <LinearGradient
-        colors={["#FFF5FA", "#FDE5F2"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={s.balancePanel}
-      >
-        <View style={s.medal}>
-          <Icon name="ribbon" color="#F269A6" size={83} />
-          <View style={s.medalHeart}>
-            <Icon name="heart" color="#FFE5F4" size={30} />
-          </View>
-        </View>
-        <View style={s.balanceCopy}>
-          <Copy>Tổng điểm Phước của bạn</Copy>
-          <Text style={s.balance}>
-            {wallet.balance.toLocaleString("vi-VN")}
-            <Text style={s.pointUnit}> điểm</Text>
-          </Text>
-        </View>
-        <View style={s.balanceAction}>
-          <Action
-            title="Xem chi tiết"
-            icon="stats-chart"
-            onPress={() => setSheet("details")}
-          />
-        </View>
-      </LinearGradient>
-      <Panel>
-        <Heading>Thao tác nhanh</Heading>
-        <View style={s.quickRow}>
-          <Quick
-            title="Điểm danh"
-            description="Ghi nhận tham gia hoạt động"
-            icon="scan"
-            onPress={() => router.push("/attendance")}
-          />
-          <Quick
-            title="Xem lịch sử điểm"
-            description="Xem chi tiết điểm Phước của bạn"
-            icon="document-text-outline"
-            onPress={() => setSheet("history")}
-          />
-          <Quick
-            title="Đổi quà"
-            description="Sử dụng điểm Phước để đổi quà ý nghĩa"
-            icon="gift-outline"
-            onPress={() => router.navigate("/store")}
-          />
-        </View>
-      </Panel>
-      <Panel>
-        <View style={s.sectionHead}>
-          <Heading>Lịch sử điểm Phước</Heading>
-          <Link title="Xem tất cả" onPress={() => setSheet("history")} />
-        </View>
-        <View style={s.outline}>{history(false)}</View>
-      </Panel>
-      <LinearGradient
-        colors={["#FCE6F4", "#FFF4FA", "#FBDDEE"]}
-        style={s.pointsIntro}
-      >
-        <View style={s.introCopy}>
-          <Heading>Giới thiệu về điểm Phước</Heading>
-          <Copy>
-            Điểm Phước ghi nhận những đóng góp tích cực cho cộng đồng. Bạn có
-            thể sử dụng số điểm hiện có để đổi những phần quà ý nghĩa.
-          </Copy>
-        </View>
-        <View style={s.gift}>
-          <Icon name="gift" size={92} color="#F485BA" />
-          <View style={s.giftHeart}>
-            <Icon name="heart" size={25} color="#EC3F94" />
-          </View>
-        </View>
-      </LinearGradient>
-      <Sheet
-        title={
-          sheet === "history" ? "Lịch sử điểm Phước" : "Thông tin điểm Phước"
-        }
-        visible={sheet !== null}
-        close={() => setSheet(null)}
-      >
-        {sheet === "history" ? (
-          history(true)
-        ) : (
-          <>
-            <Text style={s.balance}>
-              {wallet.balance.toLocaleString("vi-VN")}
-              <Text style={s.pointUnit}> điểm</Text>
-            </Text>
-            <Copy>
-              Điểm khả dụng trong phiên demo, không có giá trị tiền tệ. Hạng
-              hiện tại: Mầm xanh (minh họa).
-            </Copy>
-            <Copy>
-              Quy tắc cộng điểm chính thức chưa được kết nối. Điểm danh không tự
-              cộng điểm; lịch sử ở đây ghi nhận số điểm khởi tạo và các lần đổi
-              quà trong phiên.
-            </Copy>
-            <Action
-              title="Xem quà tại Cửa hàng"
-              onPress={() => {
-                setSheet(null);
-                router.navigate("/store");
-              }}
-            />
-          </>
-        )}
-      </Sheet>
-    </Layout>
-  );
+    ...wallet.history.map((entry, i) => ({ id: `gift-${i}`, title: entry.title, amount: -entry.points, kind: 'Đổi quà', icon: 'gift-outline' as Icon, color: '#8661BA', description: `Đã sử dụng ${entry.points.toLocaleString('vi-VN')} điểm để đổi ${entry.title}.` })),
+    { id: 'initial', title: 'Điểm khởi tạo', amount: 1250, kind: 'Điểm nhận', icon: 'flower-outline' as Icon, color: '#E65B9C', description: 'Số điểm được khởi tạo cho phiên trải nghiệm. Không phải điểm thưởng từ một hoạt động đã xác nhận.' },
+  ].filter(e => filter === 'Tất cả' || e.kind === filter);
+  return <LinearGradient colors={['#FFF7FC', '#F7F5FF', '#F9F7FD']} style={s.fill}><Stack.Screen options={{ headerShown: false }}/><SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={s.fill}>
+    <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Quay lại Tài khoản" onPress={() => router.canGoBack() ? router.back() : router.replace('/account')} style={s.back}><Ionicons name="chevron-back" size={25} color="#101A4C"/></Pressable><Text accessibilityRole="header" style={[s.title, serif]}>Điểm Phước</Text><View style={s.backSpacer}/></View>
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
+      <ImageBackground source={require('../../../assets/about/mission/mission-landscape.png')} resizeMode="cover" style={s.hero} imageStyle={s.heroImage}><LinearGradient colors={['#E8E8FFBC', '#FFF3E8B8', '#F8DDF3F5']} style={s.heroWash}>
+        <View style={s.heroTop}><View style={s.orbit}><View style={s.balanceDisc}><Lotus/><Text adjustsFontSizeToFit numberOfLines={1} style={[s.balance, serif]}>{wallet.balance.toLocaleString('vi-VN')}</Text><Text style={[s.unit, serif]}>điểm</Text></View></View><View style={s.quoteBox}><Text style={[s.quote, italic]}>Mỗi hành động tử tế đều tạo nên giá trị tốt đẹp cho cộng đồng</Text><View style={s.flourish}><View style={s.line}/><Ionicons name="heart-outline" size={26} color="#EF83BA"/></View></View></View>
+        <View style={s.summary}><Pressable accessibilityRole="button" accessibilityLabel="Xem thông tin điểm và hạng" onPress={() => setSheet('info')} style={s.stats}><View style={s.stat}><Ionicons name="stats-chart" size={21} color="#E979AF"/><View style={s.statCopy}><Text style={s.statLabel}>Điểm tháng này</Text><Text style={[s.statValue, serif]}>—</Text></View></View><View style={s.statDivider}/><View style={s.stat}><Ionicons name="ribbon-outline" size={24} color="#9CA8C0"/><View style={s.statCopy}><Text style={s.statLabel}>Hạng hiện tại</Text><Text style={[s.rank, serif]}>Mầm xanh</Text></View></View></Pressable><Pressable accessibilityRole="button" accessibilityLabel="Đổi quà" onPress={() => router.navigate('/store')} style={(state) => [(({ pressed }) => [s.redeem, { opacity: pressed ? 0.7 : 1 }])(state), { overflow: 'hidden', borderColor: 'transparent' }]}><BrandActionBackground radius={0} disabled={false} /><LinearGradient colors={buttonTheme.buttons.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.redeemFill}><Text style={[[s.redeemText, serif], { color: buttonTheme.buttons.primaryText }]}>Đổi quà</Text><Ionicons name="chevron-forward" size={18} color={buttonTheme.buttons.primaryText}/></LinearGradient></Pressable></View>
+      </LinearGradient></ImageBackground>
+      <Text accessibilityRole="header" style={[s.sectionTitle, serif]}>Cách nhận điểm Phước</Text>
+      <View style={s.ways}>{ways.map((way, index) => <Pressable key={way.title} accessibilityRole="button" onPress={() => router.navigate(way.destination)} style={({ pressed }) => [s.way, index > 0 && s.divider, { opacity: pressed ? 0.65 : 1 }]}><CircleIcon name={way.icon} color={way.color}/><View style={s.wayCopy}><Text style={[s.wayTitle, serif]}>{way.title}</Text><Text style={s.description}>{way.description}</Text></View><Ionicons name="chevron-forward" size={18} color="#8D9DC1"/></Pressable>)}<Pressable accessibilityRole="button" accessibilityLabel="Tìm hiểu quy tắc cộng điểm" onPress={() => setSheet('info')} style={s.info}><Ionicons name="information-circle-outline" size={23} color="#63749B"/><View style={s.infoDivider}/><Text style={s.infoText}>Điểm thưởng cần có xác nhận. Quy tắc cộng điểm đang được cập nhật.</Text></Pressable></View>
+      <View style={s.historyHeading}><Text accessibilityRole="header" style={[s.sectionTitle, serif]}>Lịch sử điểm</Text><Pressable accessibilityRole="button" accessibilityLabel="Lọc lịch sử điểm" onPress={() => setSheet('filter')} style={s.filter}><Text style={s.filterText}>{filter}</Text><Ionicons name="chevron-down" size={18} color="#6E7EAA"/></Pressable></View>
+      <View style={s.history}>{entries.map(entry => <View key={entry.id} style={[s.entry, expanded === entry.id && s.expanded]}><Pressable accessibilityRole="button" accessibilityState={{ expanded: expanded === entry.id }} onPress={() => setExpanded(expanded === entry.id ? null : entry.id)} style={s.entryHead}><View style={s.entryDate}><Text style={s.entryDateText}>{entry.id === 'initial' ? 'Đầu\nphiên' : 'Trong\nphiên'}</Text></View><CircleIcon name={entry.icon} color={entry.color}/><Text style={[s.entryTitle, serif]}>{entry.title}</Text><Text style={[s.amount, serif]}>{entry.amount > 0 ? '+' : '−'}{Math.abs(entry.amount).toLocaleString('vi-VN')}</Text><Ionicons name={expanded === entry.id ? 'chevron-up' : 'chevron-down'} size={18} color="#6479A4"/></Pressable>{expanded === entry.id && <View style={s.entryBody}><Text style={s.description}>{entry.description}</Text></View>}</View>)}{!entries.length && <View style={s.empty}><Text style={s.description}>Chưa có giao dịch trong mục này.</Text></View>}</View>
+    </ScrollView>
+    <Sheet title={sheet === 'filter' ? 'Lọc lịch sử điểm' : 'Thông tin điểm Phước'} visible={sheet !== null} close={() => setSheet(null)}>{sheet === 'filter' ? ['Tất cả', 'Điểm nhận', 'Đổi quà'].map(value => <Pressable key={value} accessibilityRole="radio" accessibilityState={{ checked: filter === value }} onPress={() => { setFilter(value); setSheet(null); }} style={s.filterOption}><Text style={s.description}>{value}</Text><Ionicons name={filter === value ? 'radio-button-on' : 'radio-button-off'} size={22} color="#E7408C"/></Pressable>) : <><Copy>Số dư hiện có là điểm trong phiên trải nghiệm, không có giá trị tiền tệ. Mầm xanh là hạng minh họa hiện tại.</Copy><Copy>Chưa có dữ liệu tổng điểm theo tháng hoặc quy tắc cộng điểm chính thức. Điểm danh, đóng góp và chia sẻ không tự cộng điểm trong phiên bản hiện tại.</Copy><Copy>Lịch sử hiển thị điểm khởi tạo và các lần đổi quà đã thực hiện. Thời gian giao dịch chưa được lưu nên không hiển thị ngày giả.</Copy></>}</Sheet>
+  </SafeAreaView></LinearGradient>;
 }
+const s = StyleSheet.create({
+  fill: { flex: 1 }, header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, minHeight: 62 }, back: { width: 36, height: 36, borderRadius: 22, backgroundColor: '#F5EDF7', alignItems: 'center', justifyContent: 'center' }, backSpacer: { width: 36 }, title: { flex: 1, textAlign: 'center', color: '#07133F', fontSize: 23 }, content: { width: '100%', maxWidth: 640, alignSelf: 'center', paddingHorizontal: 14, paddingBottom: 18 }, hero: { borderRadius: 17, overflow: 'hidden', marginBottom: 18 }, heroImage: { opacity: 0.7 }, heroWash: { padding: 9, paddingTop: 13 }, heroTop: { flexDirection: 'row', alignItems: 'center', gap: 15, paddingHorizontal: 8 }, orbit: { width: '44%', aspectRatio: 1, borderRadius: 150, borderWidth: 1, borderColor: '#FFFFFF', padding: 4, backgroundColor: '#FADCEB75' }, balanceDisc: { flex: 1, borderRadius: 150, backgroundColor: '#FFF9F6E8', borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }, balance: { fontSize: 34, color: '#071743', width: '95%', textAlign: 'center' }, unit: { color: '#071743', fontSize: 17 }, lotus: { width: 54, height: 31, alignItems: 'center', justifyContent: 'flex-end', marginTop: 6 }, petal: { position: 'absolute', bottom: 0, width: 19, height: 29, borderTopLeftRadius: 24, borderBottomRightRadius: 24, borderWidth: 0.5, borderColor: '#FFF8FC' }, bottomPetals: { position: 'absolute', bottom: -12, alignSelf: 'center', transform: [{ scale: 1.65 }] }, quoteBox: { flex: 1 }, quote: { fontSize: 15, lineHeight: 23, color: '#1C244F' }, flourish: { flexDirection: 'row', alignItems: 'center', marginTop: 9, justifyContent: 'flex-end' }, line: { width: '65%', height: 16, borderBottomWidth: 1, borderBottomColor: '#EE98C2', borderRadius: 30 }, summary: { flexDirection: 'row', gap: 8, marginTop: 14, alignItems: 'stretch' }, stats: { flex: 1, flexDirection: 'row', alignItems: 'center', padding: 10, gap: 7, backgroundColor: '#FFFFFFBD', borderRadius: 16 }, stat: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }, statCopy: { flex: 1 }, statLabel: { fontSize: 9, lineHeight: 13, color: '#52618A' }, statValue: { fontSize: 19, color: '#132C72' }, rank: { fontSize: 12, color: '#13234F' }, statDivider: { width: 1, height: 26, backgroundColor: '#A3AFCE' }, redeem: { width: '28%', borderRadius: 18, overflow: 'hidden', alignSelf: 'center' }, redeemFill: { minHeight: 41, flexDirection: 'row', gap: 3, alignItems: 'center', justifyContent: 'center', padding: 7 }, redeemText: { color: '#FFFFFF', fontSize: 16 }, sectionTitle: { color: '#08133D', fontSize: 22, marginBottom: 9, marginTop: 2 }, ways: { backgroundColor: '#FFFFFFB8', borderRadius: 19, paddingHorizontal: 11, marginBottom: 18 }, way: { flexDirection: 'row', alignItems: 'center', gap: 11, paddingVertical: 10 }, divider: { borderTopWidth: 1, borderTopColor: '#EBEAF5' }, iconCircle: { width: 38, height: 38, borderRadius: 23, alignItems: 'center', justifyContent: 'center' }, wayCopy: { flex: 1, gap: 3 }, wayTitle: { color: '#11183E', fontSize: 16 }, description: { color: '#69799D', fontSize: 12, lineHeight: 18 }, info: { flexDirection: 'row', gap: 12, alignItems: 'center', backgroundColor: '#EFF1FB', borderRadius: 15, padding: 12, marginHorizontal: -9, marginBottom: 2 }, infoDivider: { width: 1, height: 23, backgroundColor: '#A0ACC8' }, infoText: { flex: 1, fontSize: 12, lineHeight: 18, color: '#66769A' }, historyHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }, filter: { flexDirection: 'row', gap: 6, minHeight: 44, alignItems: 'center' }, filterText: { color: '#657698', fontSize: 13 }, history: { gap: 6 }, entry: { backgroundColor: '#FFFFFFC7', borderRadius: 15, padding: 7 }, expanded: { backgroundColor: '#E8F3FF', borderWidth: 1, borderColor: '#DFEDFC' }, entryHead: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 42 }, entryDate: { width: 43, paddingLeft: 4 }, entryDateText: { color: '#69799D', fontSize: 11, lineHeight: 16 }, entryTitle: { flex: 1, fontSize: 14, color: '#14204C' }, amount: { color: '#162C7E', fontSize: 18 }, entryBody: { backgroundColor: '#FFFFFFA0', borderRadius: 12, padding: 10, marginTop: 5 }, empty: { padding: 20, backgroundColor: '#FFFFFF', borderRadius: 15 }, filterOption: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 45 },
+});
+
+

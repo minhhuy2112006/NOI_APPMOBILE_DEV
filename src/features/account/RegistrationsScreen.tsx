@@ -1,10 +1,12 @@
+import { directAttendance } from '../attendance/directAttendance';
+import { TaskCard } from '../assignments/TaskPresentation';
 import { useCallback, useState } from "react";
 import { Image, Pressable, Text, View, ScrollView } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 
 import { campaigns } from "../campaigns/data";
 import { demoSession } from "../assignments/demo";
-import { context, displayStatus, labels } from "../assignments/model";
+import { context } from "../assignments/model";
 import { registrationLabels, registrationMatches } from "./model";
 
 import {
@@ -77,37 +79,36 @@ export default function RegistrationsScreen() {
         ))}
       </View>
       {tab === "Đăng ký" ? (
-        <>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={s.filterTagsContent}
-            style={s.filterTagsScroll}
-          >
-            {filterTags.map((item) => {
-              const active = filter === item.value;
+        <><ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={s.filterTagsContent}
+          style={s.filterTagsScroll}
+        >
+          {filterTags.map((item) => {
+            const active = filter === item.value;
 
-              return (
-                <Pressable
-                  key={item.value}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: active }}
-                  onPress={() => setFilter(item.value)}
-                  style={({ pressed }) => [
-                    s.filterTag,
-                    active && s.filterTagActive,
-                    pressed && { opacity: 0.7 },
-                  ]}
+            return (
+              <Pressable
+                key={item.value}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => setFilter(item.value)}
+                style={({ pressed }) => [
+                  s.filterTag,
+                  active && s.filterTagActive,
+                  pressed && { opacity: 0.7 },
+                ]}
+              >
+                <Text
+                  style={[s.filterTagText, active && s.filterTagTextActive]}
                 >
-                  <Text
-                    style={[s.filterTagText, active && s.filterTagTextActive]}
-                  >
-                    {item.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
           {!items.length && (
             <Panel>
               <Copy>Chưa có đăng ký trong mục này.</Copy>
@@ -126,7 +127,7 @@ export default function RegistrationsScreen() {
             return (
               <View key={item.id} style={s.registration}>
                 <View style={s.registrationTop}>
-                  {photos[item.campaign_id] && (
+                  {Boolean(photos[item.campaign_id]) && (
                     <Image
                       source={photos[item.campaign_id]}
                       style={s.campaignImage}
@@ -174,7 +175,7 @@ export default function RegistrationsScreen() {
                       title="Điểm danh"
                       icon="camera-outline"
                       filled
-                      onPress={() => router.push("/attendance")}
+                      onPress={() => { void directAttendance(item.campaign_id, actor); }}
                     />
                   ) : (
                     <View style={s.registrationStatus}>
@@ -184,7 +185,7 @@ export default function RegistrationsScreen() {
                       </Text>
                     </View>
                   )}
-                  {campaign && <Action title="Xem chi tiết" onPress={detail} />}
+                  {campaign && <Action muted title="Xem chi tiết" onPress={detail} />}
                 </View>
               </View>
             );
@@ -197,51 +198,7 @@ export default function RegistrationsScreen() {
               <Copy>Bạn chưa được phân công công việc.</Copy>
             </Panel>
           )}
-          {tasks.map((a) => {
-            const { task, group } = context(snapshot, a);
-            return (
-              <Panel key={a.id}>
-                <View style={s.registrationTop}>
-                  {photos[group.campaign_id] && (
-                    <Image
-                      source={photos[group.campaign_id]}
-                      style={s.taskImage}
-                    />
-                  )}
-                  <View style={s.registrationCopy}>
-                    <Text style={s.campaignTitle}>{task.title}</Text>
-                    <Copy>
-                      {
-                        snapshot.campaigns.find(
-                          (c) => c.id === group.campaign_id,
-                        )?.title
-                      }
-                    </Copy>
-                    <Text style={s.badgeText}>
-                      {labels[displayStatus(a, task)]}
-                    </Text>
-                  </View>
-                </View>
-                <Copy>{task.location}</Copy>
-                <Action
-                  title="Xem công việc"
-                  onPress={() =>
-                    router.push({
-                      pathname: "/assignments",
-                      params: {
-                        campaignId: group.campaign_id,
-                        assignmentId: a.id,
-                      },
-                    })
-                  }
-                />
-              </Panel>
-            );
-          })}
-          <Action
-            title="Mở quản lý công việc"
-            onPress={() => router.push("/assignments")}
-          />
+          {tasks.map(a => <TaskCard compact key={a.id} data={snapshot} assignment={a} actor={snapshot.people.find(p => p.id === actor)!} open={() => router.push({ pathname: '/assignments', params: { campaignId: context(snapshot, a).group.campaign_id, assignmentId: a.id } })} />)}
         </>
       )}
     </Layout>

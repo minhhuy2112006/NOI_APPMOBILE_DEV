@@ -1,3 +1,4 @@
+import { theme as buttonTheme , theme } from '../../theme/tokens';
 import { PageHeader } from "../../components/PageHeader";
 import { useState, type ComponentProps } from "react";
 import {
@@ -15,7 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { DonationPanel, type DonationFlow } from "./DonationPanel";
 import { ActionBackground, Button } from "../../components/ui";
-import { theme } from "../../theme/tokens";
+
 import { router } from "expo-router";
 
 type Icon = ComponentProps<typeof Ionicons>["name"];
@@ -47,6 +48,8 @@ const categories: { name: string; icon: Icon; color: string; tint: string }[] =
     { name: "Nhà ở", icon: "home", color: "#A92C68", tint: "#FAD0E2" },
   ];
 const contributionActions = [
+  { mode: "companion", title: "Thùng đồng hành NOI", icon: "heart-outline", color: "#D95399", tint: "#FDE9F3" },
+  { mode: "medical", title: "Y tế khẩn cấp", icon: "medkit-outline", color: "#4989B8", tint: "#E7F3FF" },
   {
     mode: "history",
     title: "Lịch sử đóng góp",
@@ -274,16 +277,16 @@ function DonateButton({ onPress }: { onPress: () => void }) {
       accessibilityLabel="Đóng góp ngay"
       hitSlop={6}
       onPress={onPress}
-      style={({ pressed }) => [
+      style={(state) => [(({ pressed }) => [
         s.donateButton,
         pressed && {
           opacity: 1,
           transform: [{ scale: 0.98 }],
         },
-      ]}
+      ])(state), { overflow: 'hidden', borderColor: 'transparent' }]}
     >
 {({ pressed }) => <>
-<ActionBackground pressed={pressed} radius={18} /><Ionicons name="heart-outline" size={16} color={theme.buttons.primaryText} /><Text style={s.donateButtonText}>Đóng góp</Text>
+<ActionBackground pressed={pressed} radius={18} /><Ionicons name="heart-outline" size={16} color={buttonTheme.buttons.primaryText} /><Text style={[s.donateButtonText, { color: buttonTheme.buttons.primaryText }]}>Đóng góp</Text>
 </>}
 </Pressable>
   );
@@ -293,18 +296,18 @@ function DetailButton({ onPress }: { onPress: () => void }) {
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [
+      style={(state) => [(({ pressed }) => [
         s.detailButton,
         pressed && {
           opacity: 1,
           transform: [{ scale: 0.98 }],
         },
-      ]}
+      ])(state), { overflow: 'hidden', borderColor: 'transparent' }]}
     >
 {({ pressed }) => <>
-<ActionBackground pressed={pressed} radius={18} /><Text style={s.detailButtonText}>Xem chi tiết</Text>
+<ActionBackground pressed={pressed} radius={18} /><Text style={[s.detailButtonText, { color: buttonTheme.buttons.primaryText }]}>Xem chi tiết</Text>
 
-      <Ionicons name="arrow-forward" size={14} color={theme.buttons.primaryText} />
+      <Ionicons name="arrow-forward" size={14} color={buttonTheme.buttons.primaryText} />
 </>}
 </Pressable>
   );
@@ -419,7 +422,7 @@ export default function ContributionsScreen() {
             title="ĐÓNG GÓP"
             subtitle="Góp chút yêu thương, nối dài hy vọng"
           />
-          <View style={s.actionRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.actionRow} contentContainerStyle={{ paddingHorizontal: 2, paddingVertical: 4, gap: 0, alignItems: "flex-start" }}>
             {contributionActions.map((item) => (
               <Pressable
                 key={item.mode}
@@ -431,7 +434,11 @@ export default function ContributionsScreen() {
                     : undefined
                 }
                 onPress={() => {
-                  if (item.mode === "favorites") {
+                  if (item.mode === "companion") {
+                    router.push("/contributions/companion");
+                  } else if (item.mode === "medical") {
+                    router.push("/contributions/emergency-medical");
+                  } else if (item.mode === "favorites") {
                     setSavedOnly(!savedOnly);
                     setCategory("");
                     setPage(0);
@@ -445,21 +452,14 @@ export default function ContributionsScreen() {
                 ]}
               >
                 <View style={[s.actionIcon, { backgroundColor: item.tint }]}>
-                  <Ionicons name={item.icon} size={23} color={item.color} />
+                  <Ionicons name={item.icon} size={20} color={item.color} />
                 </View>
                 <Text style={s.actionLabel}>
-                  {item.title
-                    .split(" ")
-                    .reduce<string[]>((lines, word, index) => {
-                      if (index % 2 === 0) lines.push(word);
-                      else lines[lines.length - 1] += " " + word;
-                      return lines;
-                    }, [])
-                    .join(String.fromCharCode(10))}
+                  {item.mode === "companion" ? "Thùng đồng\nhành NOI" : item.mode === "medical" ? "Y tế\nkhẩn cấp" : item.mode === "history" ? "Lịch sử\nđóng góp" : item.mode === "recurring" ? "Đóng góp\nđịnh kỳ" : item.mode === "favorites" ? "Chiến dịch\nyêu thích" : item.title}
                 </Text>
               </Pressable>
             ))}
-          </View>
+          </ScrollView>
           {heading("Danh mục thiện nguyện", "categories")}
           <ScrollView
             horizontal
@@ -841,39 +841,19 @@ export default function ContributionsScreen() {
 }
 const s = StyleSheet.create({
   actionRow: {
-    flexDirection: "row",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#EAE2ED",
-    padding: 6,
-    marginTop: 2,
-    marginBottom: 8,
+    flexGrow: 0, alignSelf: "stretch", backgroundColor: "#FFFFFF",
+    borderRadius: 16, borderWidth: 1, borderColor: "#EAE2ED",
+    marginTop: 0, marginBottom: 8,
   },
   actionCard: {
-    flex: 1,
-    minWidth: 0,
-    alignItems: "center",
-    paddingHorizontal: 3,
-    paddingVertical: 8,
-    gap: 7,
-    borderRadius: 12,
+    width: 76, flexShrink: 0, alignItems: "center",
+    paddingHorizontal: 2, paddingVertical: 4, gap: 4, borderRadius: 12,
   },
   actionIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#F8EDF6",
-    alignItems: "center",
-    justifyContent: "center",
+    width: 34, height: 34, borderRadius: 17, backgroundColor: "#F8EDF6",
+    alignItems: "center", justifyContent: "center",
   },
-  actionLabel: {
-    fontSize: 11,
-    lineHeight: 16,
-    fontWeight: "600",
-    color: "#36323B",
-    textAlign: "center",
-  },
+  actionLabel: { fontSize: 10, lineHeight: 14, fontWeight: "600", color: "#36323B", textAlign: "center" },
   detailButton: {
     width: "100%",
     minHeight: 36,
@@ -1151,3 +1131,4 @@ const s = StyleSheet.create({
     color: theme.buttons.primaryText,
   },
 });
+

@@ -1,3 +1,5 @@
+import { ActionBackground as BrandActionBackground } from '../../components/ui';
+import { theme as buttonTheme } from '../../theme/tokens';
 import {
   useRef,
   useState,
@@ -676,18 +678,18 @@ export default function ProfileScreen() {
           <Pressable
   accessibilityRole="button"
   onPress={() => openAccount("edit")}
-  style={({ pressed }) => [
+  style={(state) => [(({ pressed }) => [
     s.bottomEditButton,
     { opacity: pressed ? 0.7 : 1 },
-  ]}
->
+  ])(state), { overflow: 'hidden', borderColor: 'transparent' }]}
+><BrandActionBackground radius={0} disabled={false} />
   <LinearGradient
-    colors={["#F2B3E3", "#B7D1FF"]}
+    colors={buttonTheme.buttons.gradient}
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 0 }}
     style={s.bottomEditGradient}
   >
-    <Text style={s.bottomEditText}>
+    <Text style={[s.bottomEditText, { color: buttonTheme.buttons.primaryText }]}>
       Chỉnh sửa hồ sơ
     </Text>
   </LinearGradient>

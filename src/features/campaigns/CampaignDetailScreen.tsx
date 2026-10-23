@@ -1,7 +1,9 @@
-import { saveDemoRegistration } from './registrationSession';
+import { ActionBackground as BrandActionBackground } from '../../components/ui';
+import { theme as buttonTheme , theme } from '../../theme/tokens';
+import { saveDemoRegistration, useCampaignRegistration } from './registrationSession';
 import { useAssistant, useAssistantContext } from '../assistant/Assistant';
 import CampaignTimeline from '../schedule/CampaignTimeline';
-import { theme } from '../../theme/tokens';
+
 import { CampaignRegistration } from "./CampaignRegistration";
 import { useState, type ComponentProps } from "react";
 import {
@@ -122,9 +124,9 @@ export default function CampaignDetailScreen() {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.replace("/")}
-          style={s.softButton}
-        >
-          <Text style={s.link}>Về danh sách chiến dịch</Text>
+          style={[s.softButton, { overflow: 'hidden', borderColor: 'transparent' }]}
+        ><BrandActionBackground radius={0} disabled={false} />
+          <Text style={[s.link, { color: buttonTheme.buttons.primaryText }]}>Về danh sách chiến dịch</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -142,7 +144,7 @@ function Detail({
   const assistant = useAssistant();
   useAssistantContext("Chiến dịch", { section: tab });
   const [saved, setSaved] = useState(false);
-  const [joined, setJoined] = useState(false);
+  const joined = useCampaignRegistration(campaign.id);
 
   const [expanded, setExpanded] = useState(false);
   const [faq, setFaq] = useState<number | null>(0);
@@ -199,7 +201,7 @@ function Detail({
     {
       question: "Tôi có thể hủy đăng ký không?",
       answer:
-        "Sau khi thử đăng ký, mở Xem đăng ký rồi chọn Hủy đăng ký demo. Trạng thái demo sẽ mất khi rời màn hình.",
+        "Bạn có thể theo dõi đăng ký tại Tài khoản → Đăng ký của tôi.",
     },
     {
       question: "Có hỗ trợ chi phí hoặc giấy chứng nhận không?",
@@ -441,7 +443,7 @@ function Detail({
                   accessibilityRole="button"
                   accessibilityState={{ expanded }}
                   onPress={() => setExpanded(!expanded)}
-                  style={s.readMore}
+                  style={[s.readMore, { backgroundColor: "#FFFFFF" }]}
                 >
                   <Text style={s.link}>
                     {expanded ? "Thu gọn" : "Xem thêm"}
@@ -504,9 +506,9 @@ function Detail({
                     accessibilityRole="button"
                     accessibilityState={{ expanded: preparationExpanded }}
                     onPress={() => setPreparationExpanded(!preparationExpanded)}
-                    style={s.showMorePreparation}
+                    style={[s.showMorePreparation, { backgroundColor: "#FFFFFF" }]}
                   >
-                    <Text style={s.showMorePreparationText}>
+                    <Text style={[s.showMorePreparationText, { color: "#E54698" }]}>
                       {preparationExpanded
                         ? "Thu gọn"
                         : `Xem thêm ${hiddenPreparationCount} mục`}
@@ -857,15 +859,15 @@ function Detail({
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityState={{ disabled: participation.full && !joined }}
-            disabled={participation.full && !joined}
+            accessibilityState={{ disabled: participation.full || joined }}
+            disabled={participation.full || joined}
             onPress={() => setRegistrationOpen(true)}
             style={s.join}
           >
 {({ pressed }) => <>
 <LinearGradient
               colors={
-                participation.full && !joined
+                participation.full || joined
                   ? theme.buttons.disabledGradient
                   : (pressed ? theme.buttons.pressedGradient : theme.buttons.gradient)
               }
@@ -878,11 +880,11 @@ function Detail({
                   joined ? "checkmark-circle-outline" : "person-add-outline"
                 }
                 size={22}
-                color={participation.full && !joined ? theme.buttons.disabledText : theme.buttons.primaryText}
+                color={participation.full || joined ? theme.buttons.disabledText : theme.buttons.primaryText}
               />
-              <Text style={[s.joinLabel, participation.full && !joined && { color: theme.buttons.disabledText }]}>
+              <Text style={[s.joinLabel, (participation.full || joined) && { color: theme.buttons.disabledText }]}>
                 {joined
-                  ? "Xem đăng ký"
+                  ? "Đã đăng ký"
                   : participation.full
                     ? "Đã đủ số lượng"
                     : "Đăng ký tham gia"}
@@ -922,8 +924,8 @@ function Detail({
         photo={photos[campaign.id]}
         available={!participation.full}
         onClose={() => setRegistrationOpen(false)}
-        onSubmitted={() => { saveDemoRegistration(campaign.id, 'submit'); setJoined(true); }}
-        onCancel={() => { saveDemoRegistration(campaign.id, 'cancel'); setJoined(false); }}
+        onSubmitted={() => { saveDemoRegistration(campaign.id, 'submit'); }}
+        onCancel={() => { saveDemoRegistration(campaign.id, 'cancel'); }}
       />
     </SafeAreaView>
   );
@@ -1047,7 +1049,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     gap: 6,
   },
-  link: { fontSize: 12, color: colors.blue, fontWeight: "600" },
+  link: { fontSize: 12, color: "#E54698", fontWeight: "600" },
   softCard: {
     padding: 14,
     borderRadius: 14,
@@ -1362,3 +1364,4 @@ const s = StyleSheet.create({
     flexShrink: 0,
   },
 });
+

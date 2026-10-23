@@ -31,7 +31,7 @@ export default function SettingsScreen(){
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[s.content,{paddingHorizontal:Math.max(12,Math.min(width,640)*30/941)}]}>
         <Group title="Tài khoản">
           <Row title="Thông tin tài khoản" description="Xem thông tin tài khoản của bạn" onPress={()=>openAccount('profile')}/>
-          <Row title="Bảo mật" description="Đổi mật khẩu" onPress={()=>openAccount('password')}/>
+          <Row title="Bảo mật" description="Mật khẩu và quyền riêng tư" onPress={()=>openAccount('security')}/>
           <Row title="Quản lý thiết bị" description="Xem và quản lý các thiết bị đã đăng nhập" onPress={()=>openAccount('devices')} last/>
         </Group>
         <Group title="Thông báo">

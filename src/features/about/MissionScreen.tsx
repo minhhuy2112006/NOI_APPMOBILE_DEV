@@ -1,3 +1,4 @@
+import { useAboutTypography } from './aboutTypography';
 import { type PropsWithChildren } from "react";
 import {
   Image,
@@ -44,6 +45,7 @@ function PinkCard({ children, scale }: PropsWithChildren<{ scale: number }>) {
   );
 }
 export default function MissionScreen() {
+  const typography = useAboutTypography();
   const { width } = useWindowDimensions();
   const u = Math.min(width, 520) / 853;
 
@@ -111,7 +113,7 @@ export default function MissionScreen() {
           >
             <Ionicons name="chevron-back" size={23} color="#123A70" />
           </Pressable>
-          <Text style={s.headerTitle}>Sứ mệnh</Text>
+          <Text style={[s.headerTitle, typography.header]}>Sứ mệnh</Text>
           <View style={s.back} />
         </View>
         <ScrollView

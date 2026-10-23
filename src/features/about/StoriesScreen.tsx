@@ -1,3 +1,5 @@
+import { useAboutTypography } from './aboutTypography';
+import { theme as buttonTheme } from '../../theme/tokens';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -41,6 +43,7 @@ const articles = [
 const filters = ["Tất cả", "Câu chuyện", "Hoạt động", "Tin tức"];
 
 export default function StoriesScreen() {
+  const typography = useAboutTypography();
   const [selected, setSelected] = useState("Tất cả");
 
   const filtered =
@@ -66,16 +69,16 @@ export default function StoriesScreen() {
                 <Ionicons name="chevron-back" size={26} color="#122453" />
               </Pressable>
 
-              <Text style={s.headerTitle}>Tin tức & câu chuyện</Text>
+              <Text style={[s.headerTitle, typography.header]}>Tin tức & câu chuyện</Text>
 
               <View style={s.headerSpace} />
             </View>
 
             <View style={s.hero}>
   <View style={s.heroCopy}>
-    <Text style={s.heroTitle}>
+    <Text style={[s.heroTitle, typography.hero]}>
     Những câu chuyện{"\n"}
-  lan tỏa <Text style={s.heroPink}>yêu thương</Text>
+  lan tỏa <Text style={[s.heroPink, typography.accent]}>yêu thương</Text>
     </Text>
 
     <Text style={s.heroDescription}>
@@ -83,30 +86,7 @@ export default function StoriesScreen() {
     </Text>
   </View>
 
-  <View style={s.megaphoneArt} pointerEvents="none">
-    <View style={s.artBlue} />
-    <View style={s.artPink} />
-
-    <Ionicons
-      name="megaphone"
-      size={47}
-      color="#718FE8"
-    />
-
-    <Ionicons
-      name="heart"
-      size={15}
-      color="#ED72BA"
-      style={s.artHeart}
-    />
-
-    <Ionicons
-      name="sparkles"
-      size={13}
-      color="#E1A449"
-      style={s.artSparkle}
-    />
-  </View>
+  <Image source={require('../../../assets/about/join/join-share.png')} style={{ position: 'absolute', right: 0, top: 0, width: '30%', height: 116, borderRadius: 26 }} resizeMode="cover" accessibilityLabel="Lan tỏa những câu chuyện tích cực" />
 </View>
 
             <ScrollView
@@ -118,15 +98,15 @@ export default function StoriesScreen() {
                 const active = selected === filter;
 
                 return (
-                  <Pressable key={filter} onPress={() => setSelected(filter)}>
+                  <Pressable key={filter} accessibilityRole="tab" aria-selected={active} accessibilityState={{ selected: active }} onPress={() => setSelected(filter)} style={{ borderRadius: 22, overflow: "hidden" }}>
                     {active ? (
                       <LinearGradient
-                        colors={["#F2B3E3", "#B7D1FF"]}
+                        colors={buttonTheme.buttons.gradient}
                         start={{ x: 0, y: 0.5 }}
                         end={{ x: 1, y: 0.5 }}
                         style={s.filterActive}
                       >
-                        <Text style={s.filterActiveText}>{filter}</Text>
+                        <Text style={[s.filterActiveText, { color: buttonTheme.buttons.primaryText }]}>{filter}</Text>
                       </LinearGradient>
                     ) : (
                       <View style={s.filter}>
@@ -219,7 +199,7 @@ const s = StyleSheet.create({
   },
   
   heroCopy: {
-    width: "80%",
+    width: "66%",
   },
   
   megaphoneArt: {
@@ -337,7 +317,7 @@ const s = StyleSheet.create({
   
     paddingHorizontal: 17,
   
-    borderRadius: 14,
+    borderRadius: 22,
   
     alignItems: "center",
     justifyContent: "center",
@@ -356,12 +336,12 @@ const s = StyleSheet.create({
   
     paddingHorizontal: 16,
   
-    borderRadius: 14,
+    borderRadius: 22,
   
     alignItems: "center",
     justifyContent: "center",
   
-    backgroundColor: "#F0F2F7",
+    backgroundColor: "transparent", borderWidth: 1, borderColor: "#E1E3EC",
   },
   
   filterText: {

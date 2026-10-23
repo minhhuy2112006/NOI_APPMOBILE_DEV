@@ -1,3 +1,5 @@
+import { ActionBackground as BrandActionBackground , Button, Chip } from '../../components/ui';
+import { theme as buttonTheme , theme } from '../../theme/tokens';
 import { walletSession } from './session';
 import { PageHeader } from '../../components/PageHeader';
 import { useRef, useState } from "react";
@@ -15,8 +17,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { PhuocGlow } from "./PhuocGlow";
-import { Button, Chip } from "../../components/ui";
-import { theme } from "../../theme/tokens";
+
+
 import { gifts, redeemGift, type Gift } from "./model";
 
 const format = (value: number) => value.toLocaleString("vi-VN");
@@ -220,19 +222,19 @@ export default function StoreScreen() {
                             setSelected(gift);
                             setPanel("gift");
                           }}
-                          style={({ pressed }) => [
+                          style={(state) => [(({ pressed }) => [
                             s.redeem,
                             pressed && { opacity: 1 },
-                          ]}
+                          ])(state), { overflow: 'hidden', borderColor: 'transparent' }]}
                         >
-{({ pressed }) => <>
+{({ pressed }) => <><BrandActionBackground radius={0} disabled={false} /><>
 <LinearGradient
                             colors={(pressed ? theme.buttons.pressedGradient : theme.buttons.gradient)}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                             style={s.redeemInner}
                           >
-                            <Text style={s.redeemText}>
+                            <Text style={[s.redeemText, { color: buttonTheme.buttons.primaryText }]}>
                               {done
                                 ? "Đã đổi"
                                 : wallet.balance < gift.points
@@ -240,7 +242,7 @@ export default function StoreScreen() {
                                   : "Đổi quà"}
                             </Text>
                           </LinearGradient>
-</>}
+</></>}
 </Pressable>
                       </View>
                     </View>
@@ -640,4 +642,5 @@ const s = StyleSheet.create({
   badge: { alignItems: "center", gap: 8, padding: 18 },
   success: { color: "#276B4B", fontSize: 14, lineHeight: 21 },
 });
+
 

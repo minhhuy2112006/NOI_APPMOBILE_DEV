@@ -5,20 +5,20 @@
     "scheme": "noi-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/branding/app-icon.png",
+    "icon": "./assets/branding/noi-sprout-transparent.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#F8F1FC",
-        "foregroundImage": "./assets/branding/app-icon.png"
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/branding/noi-sprout-transparent.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/branding/app-icon.png"
+      "favicon": "./assets/branding/noi-sprout-transparent.png"
     },
     "plugins": [
       "expo-router",
@@ -26,9 +26,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F8F1FC",
-          "image": "./assets/branding/noi-emblem.png",
-          "imageWidth": 112,
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/branding/noi-sprout-transparent.png",
+          "imageWidth": 180,
           "resizeMode": "contain"
         }
       ],

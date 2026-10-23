@@ -1,11 +1,11 @@
 // NOI web palette, enriched pink/blue for mobile at user request.
 export const theme = {
   buttons: {
-    gradient: ['#F2B3E3', '#B7D1FF'],
-    pressedGradient: ['#E598D9', '#9FC2FF'],
-    disabledGradient: ['#F8E1F0', '#DCE8FF'],
+    gradient: ['#E866A7', '#AD70D5', '#438EF2'],
+    pressedGradient: ['#D34F93', '#945AC2', '#2876D9'],
+    disabledGradient: ['#E8BFD5', '#D0C0E4', '#BDD2EE'],
     text: '#41466B',
-    primaryText: '#353959',
+    primaryText: '#FFFFFF',
     secondaryBackground: '#EEF0FA',
     border: '#D9DDED',
     disabledBackground: '#E5E7EB',

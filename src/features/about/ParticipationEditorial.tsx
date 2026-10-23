@@ -1,3 +1,5 @@
+import { useAboutTypography } from './aboutTypography';
+import { theme as buttonTheme } from '../../theme/tokens';
 import { useMemo } from 'react';
 import { Alert, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -43,6 +45,7 @@ function Thread({ u, reverse, height }: { u: number; reverse: boolean; height: n
 
 export default function ParticipationEditorial({ kind }: { kind: 'join' | 'standards' }) {
   const isJoin = kind === 'join';
+  const typography = useAboutTypography();
   const { width, fontScale } = useWindowDimensions();
   const u = Math.min(width, 520)/863;
   const large = fontScale > 1.15;
@@ -53,7 +56,7 @@ export default function ParticipationEditorial({ kind }: { kind: 'join' | 'stand
   useAssistantContext(title, { page:title, sections:items.map(({title,text}) => ({title,text})) });
   return <SafeAreaView edges={['top','left','right']} style={s.screen}>
     <Stack.Screen options={{ headerShown:false }} />
-    <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Quay lại Về NOI" onPress={() => router.canGoBack() ? router.back() : router.replace('/about')} style={s.back}><Ionicons name="chevron-back" size={25} color="#09265F" /></Pressable><Text style={s.headerTitle}>{title}</Text><View style={s.back}/></View>
+    <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Quay lại Về NOI" onPress={() => router.canGoBack() ? router.back() : router.replace('/about')} style={s.back}><Ionicons name="chevron-back" size={25} color="#09265F" /></Pressable><Text style={[s.headerTitle, typography.header]}>{title}</Text><View style={s.back}/></View>
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
       <LinearGradient colors={isJoin ? ['#FFF8FB','#FFF9FB','#F2F8FF'] : ['#FFF8FB','#FFF8FA','#FFF8FA']}>
         <View style={[s.hero, {height:large ? undefined : (isJoin?500:345)*u}]}>
@@ -74,7 +77,7 @@ export default function ParticipationEditorial({ kind }: { kind: 'join' | 'stand
           </>;
           return isJoin ? <Pressable accessibilityRole="button" accessibilityLabel={item.title} key={item.title} onPress={() => participate(index)} style={[{height:rowHeight*u},large && s.readingRow]}>{content}</Pressable> : <View key={item.title} style={[{height:rowHeight*u},large && s.readingRow]}>{content}</View>;
         })}
-        {isJoin ? <Pressable accessibilityRole="button" onPress={() => router.navigate('/')} style={s.cta}>{({pressed}) => <><ActionBackground pressed={pressed} radius={32*u}/><Text style={s.ctaText}>Tham gia ngay</Text><Ionicons name="arrow-forward" size={38*u} color="#09265F" /></>}</Pressable> : <View style={[s.footer,large && {height:undefined,minHeight:280*u}]}>
+        {isJoin ? <Pressable accessibilityRole="button" onPress={() => router.navigate('/')} style={[s.cta, { overflow: 'hidden', borderColor: 'transparent' }]}>{({pressed}) => <><ActionBackground pressed={pressed} radius={32*u}/><Text style={[s.ctaText, { color: buttonTheme.buttons.primaryText }]}>Tham gia ngay</Text><Ionicons name="arrow-forward" size={38*u} color={buttonTheme.buttons.primaryText} /></>}</Pressable> : <View style={[s.footer,large && {height:undefined,minHeight:280*u}]}>
           <Image source={require('../../../assets/about/standard/standards-footer.png')} style={StyleSheet.absoluteFill} resizeMode="cover" accessible={false}/>
           <LinearGradient colors={['#FCE8F3','#FCE8F3E8','#FCE8F300']} start={{x:0,y:0.5}} end={{x:1,y:0.5}} style={StyleSheet.absoluteFill}/>
           <Text style={s.footerText}>Một cộng đồng tốt đẹp{'\n'}<Text style={s.pink}>bắt đầu từ cách chúng ta{'\n'}đối xử với nhau.</Text></Text><View style={s.underline}/>
@@ -90,3 +93,4 @@ const styles=(u:number,loaded:boolean) => StyleSheet.create({
   cta:{minHeight:106*u,marginHorizontal:44*u,marginTop:15*u,marginBottom:16*u,flexDirection:'row',gap:22*u,alignItems:'center',justifyContent:'center'},ctaText:{fontSize:34*u,fontWeight:'700',color:'#09265F'},footer:{height:280*u,overflow:'hidden',borderTopLeftRadius:100*u,borderBottomLeftRadius:100*u,marginTop:0,paddingTop:40*u,paddingLeft:60*u},footerText:{fontFamily:loaded?'Lora_400Regular_Italic':'Georgia',fontSize:40*u,lineHeight:48*u,color:'#09265F'},underline:{width:110*u,height:2*u,backgroundColor:'#F052A2',marginTop:16*u,transform:[{rotate:'-7deg'}]},
   largeHero:{fontSize:56*u,lineHeight:70*u,paddingRight:24*u},fullWidth:{width:'95%',paddingBottom:20*u},readingRow:{height:undefined,minHeight:230*u,padding:24*u,paddingLeft:150*u,gap:16*u},readingPhoto:{position:'relative',left:0,top:0,alignSelf:'flex-end'},readingCopy:{position:'relative',left:0,top:0,width:'100%'},
 });
+

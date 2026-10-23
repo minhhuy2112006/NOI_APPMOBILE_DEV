@@ -1,0 +1,44 @@
+import { ActionBackground as BrandActionBackground } from '../../components/ui';
+import { theme as buttonTheme } from '../../theme/tokens';
+import { useState, type ComponentProps } from 'react';
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { campaignData } from '../contributions/campaignData';
+import type { DonationEntry } from '../contributions/session';
+import { Copy, Sheet } from './AccountScreenShared';
+
+type Icon = ComponentProps<typeof Ionicons>['name'];
+function Bubble({ icon, color }: { icon: Icon; color: string }) { return <View style={[s.bubble, { backgroundColor: color + '12' }]}><Ionicons name={icon} color={color} size={22}/></View>; }
+export default function DonationDetail({ entry, close }: { entry: DonationEntry; close: () => void }) {
+  const [receipt, setReceipt] = useState(false);
+  const campaign = Object.values(campaignData).find(c => c.title === entry.target);
+  const paid = entry.source === 'backend' && entry.status === 'paid';
+  const cancelled = entry.status === 'cancelled';
+  const label = paid ? 'Hoàn tất' : cancelled ? 'Đã hủy' : entry.status === 'pending' ? 'Đang chờ' : 'Chưa xác nhận';
+  const amount = entry.amount.toLocaleString('vi-VN') + 'đ';
+  const rows: { label: string; value: string; icon: Icon; color: string }[] = [
+    { label: 'Số tiền đóng góp', value: amount, icon: 'cash-outline', color: '#E3448C' },
+    { label: 'Ngày đóng góp', value: entry.date, icon: 'calendar', color: '#399FD7' },
+    { label: 'Mã giao dịch', value: entry.id, icon: 'document-text-outline', color: '#50A988' },
+    { label: 'Hình thức', value: entry.method || 'Chưa cập nhật', icon: 'card-outline', color: '#9275D7' },
+    { label: 'Tổ chức tiếp nhận', value: campaign?.organization || 'Chưa cập nhật', icon: 'heart', color: '#EC599B' },
+  ];
+  return <Modal visible animationType="slide" presentationStyle="fullScreen" onRequestClose={close}><SafeAreaProvider><LinearGradient colors={['#FFF2F8', '#F9F8FF', '#EDF7FF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.7 }} style={s.fill}><SafeAreaView edges={['top', 'left', 'right', 'bottom']} style={s.fill}>
+    <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Quay lại Lịch sử quyên góp" onPress={close} style={s.back}><Ionicons name="arrow-back" size={25} color="#11182B"/></Pressable><Text accessibilityRole="header" style={s.headerTitle}>Chi tiết đóng góp</Text><View style={s.back}/></View>
+    <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <View style={s.hero}><View style={[s.heroImage, !campaign && s.placeholder]}>{campaign ? <Image source={campaign.image} resizeMode="cover" accessibilityLabel={campaign.title} style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}/> : <Ionicons name="heart-outline" color="#E97EAE" size={55}/>}</View><View style={s.heroTitleRow}><Text style={s.heroTitle}>{entry.target}</Text><View style={[s.badge, { backgroundColor: paid ? '#E7F7EE' : cancelled ? '#F0EDF4' : '#EAF5FF' }]}><Ionicons name={paid ? 'checkmark-circle' : cancelled ? 'close-circle' : 'time-outline'} size={15} color={paid ? '#329C71' : '#688BAA'}/><Text style={[s.badgeText, { color: paid ? '#329C71' : '#688BAA' }]}>{label}</Text></View></View><Text style={s.description}>{campaign?.subtitle || 'Đóng góp tài chính cho hoạt động cộng đồng.'}</Text></View>
+      <View style={s.details}>{rows.map((row, index) => <View key={row.label} style={[s.row, index > 0 && s.divider]}><Bubble icon={row.icon} color={row.color}/><Text style={s.rowLabel}>{row.label}</Text><Text selectable style={[s.rowValue, index === 0 && s.amount]}>{row.value}</Text></View>)}</View>
+      <View style={s.noteCard}><Bubble icon="leaf" color="#38A474"/><View style={s.noteCopy}><Text accessibilityRole="header" style={s.noteTitle}>Tác động từ đóng góp</Text><Text style={s.description}>{campaign?.goalDescription || campaign?.subtitle || 'Cùng hỗ trợ những hoạt động cộng đồng và những hoàn cảnh cần được sẻ chia.'}</Text><Text style={s.description}>Kết quả sử dụng khoản đóng góp sẽ được cập nhật khi có báo cáo từ tổ chức.</Text></View></View>
+      <View style={s.noteCard}><Bubble icon="document-text-outline" color="#E74387"/><View style={s.noteCopy}><Text accessibilityRole="header" style={s.noteTitle}>Ghi chú / biên nhận</Text><Text style={s.description}>{paid ? 'Khoản đóng góp của bạn đã được hệ thống xác nhận. Cảm ơn bạn đã cùng NOI lan tỏa những điều tốt đẹp.' : cancelled ? 'Giao dịch này đã được hủy và không được tính vào tổng đã đóng góp.' : 'Khoản đóng góp chưa có xác nhận thanh toán. Bạn có thể theo dõi trạng thái và mã giao dịch tại đây.'}</Text></View></View>
+      <View style={s.actions}><Pressable accessibilityRole="button" onPress={() => setReceipt(true)} style={[s.receiptButton, { overflow: 'hidden', borderColor: 'transparent' }]}><BrandActionBackground radius={0} disabled={false} /><Text style={[s.receiptText, { color: buttonTheme.buttons.primaryText }]}>Xem biên nhận</Text></Pressable><Pressable accessibilityRole="button" onPress={() => { close(); if (campaign) router.push({ pathname: '/contributions/donate/[id]', params: { id: campaign.id } }); else router.navigate('/contributions'); }} style={[s.donateButton, { overflow: 'hidden', borderColor: 'transparent' }]}><BrandActionBackground radius={0} disabled={false} /><LinearGradient colors={buttonTheme.buttons.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.donateFill}><Text style={[s.donateText, { color: buttonTheme.buttons.primaryText }]}>Đóng góp lại</Text></LinearGradient></Pressable></View>
+    </ScrollView>
+    <Sheet title="Biên nhận đóng góp" visible={receipt} close={() => setReceipt(false)}><Copy>Mã giao dịch: {entry.id}</Copy><Copy>{paid ? 'Giao dịch đã được xác nhận, nhưng ứng dụng chưa được cung cấp tệp biên nhận chính thức.' : 'Chưa có biên nhận thanh toán được xác nhận cho giao dịch này.'}</Copy><Copy>Bạn có thể dùng mã giao dịch để đối chiếu với tổ chức tiếp nhận.</Copy></Sheet>
+  </SafeAreaView></LinearGradient></SafeAreaProvider></Modal>;
+}
+const s = StyleSheet.create({
+  fill: { flex: 1 }, header: { minHeight: 59, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10 }, back: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }, headerTitle: { flex: 1, fontSize: 22, fontWeight: '700', textAlign: 'center', color: '#111629' }, content: { width: '100%', maxWidth: 700, alignSelf: 'center', paddingHorizontal: 14, paddingBottom: 10, gap: 10 }, hero: { borderRadius: 18, padding: 7, paddingBottom: 13, backgroundColor: '#FFFFFFEB', gap: 9 }, heroImage: { width: '100%', aspectRatio: 2.3, maxHeight: 240, overflow: 'hidden', borderRadius: 12 }, placeholder: { backgroundColor: '#FCEAF3', alignItems: 'center', justifyContent: 'center' }, heroTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 3, flexWrap: 'wrap' }, heroTitle: { color: '#141827', fontSize: 20, lineHeight: 26, fontWeight: '700', flexGrow: 1, flexShrink: 1 }, badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 9, paddingVertical: 5, borderRadius: 16 }, badgeText: { fontSize: 11 }, description: { color: '#828B98', fontSize: 13, lineHeight: 20 }, details: { backgroundColor: '#FFFFFFEA', paddingHorizontal: 12, borderRadius: 18, paddingVertical: 5 }, row: { flexDirection: 'row', alignItems: 'center', minHeight: 45, gap: 9, paddingVertical: 5 }, divider: { borderTopWidth: 1, borderTopColor: '#F0F0F5' }, bubble: { width: 34, height: 34, borderRadius: 21, alignItems: 'center', justifyContent: 'center' }, rowLabel: { flex: 0.9, color: '#8A929E', fontSize: 12, lineHeight: 17 }, rowValue: { flex: 1.2, fontSize: 13, lineHeight: 19, color: '#202338' }, amount: { color: '#DF3C82', fontSize: 18, fontWeight: '700' }, noteCard: { backgroundColor: '#FFFFFFEB', borderRadius: 18, padding: 13, flexDirection: 'row', alignItems: 'flex-start', gap: 12 }, noteCopy: { flex: 1, gap: 6 }, noteTitle: { color: '#171D2B', fontSize: 17, fontWeight: '700' }, actions: { flexDirection: 'row', gap: 8 }, receiptButton: { flex: 1, minHeight: 44, borderRadius: 27, borderWidth: 1, borderColor: '#E34D8B', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFFBB', padding: 9 }, receiptText: { color: '#DF3179', fontSize: 14, fontWeight: '700' }, donateButton: { flex: 1, borderRadius: 27, overflow: 'hidden' }, donateFill: { flex: 1, minHeight: 44, padding: 9, alignItems: 'center', justifyContent: 'center' }, donateText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
+});
+

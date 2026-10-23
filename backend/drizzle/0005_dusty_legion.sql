@@ -1,0 +1,3 @@
+CREATE UNIQUE INDEX "organization_members_one_primary_rep_idx" ON "organization_members" USING btree ("organization_id") WHERE "organization_members"."role" = 'PRIMARY_REPRESENTATIVE';--> statement-breakpoint
+CREATE UNIQUE INDEX "organization_invitations_one_active_idx" ON "organization_invitations" USING btree ("organization_id","invited_user_id") WHERE "organization_invitations"."status" IN ('PENDING', 'PENDING_VERIFICATION');--> statement-breakpoint
+CREATE UNIQUE INDEX "organization_rep_transfers_one_pending_idx" ON "organization_representative_transfers" USING btree ("organization_id") WHERE "organization_representative_transfers"."status" = 'PENDING';

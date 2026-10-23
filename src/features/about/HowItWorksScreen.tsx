@@ -1,3 +1,5 @@
+import { useAboutTypography } from './aboutTypography';
+import { theme as buttonTheme } from '../../theme/tokens';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, Stack } from 'expo-router';
@@ -14,6 +16,7 @@ const steps = [
 ] as const;
 
 export default function HowItWorksScreen() {
+  const typography = useAboutTypography();
   const { width } = useWindowDimensions();
   const u = Math.min(width, 520) / 853;
   const s = styles(u);
@@ -24,18 +27,14 @@ export default function HowItWorksScreen() {
       <SafeAreaView edges={['top', 'left', 'right']} style={s.fill}>
         <View style={s.header}>
           <Pressable accessibilityRole="button" accessibilityLabel="Quay lại Về NOI" style={s.back} onPress={() => router.canGoBack() ? router.back() : router.replace('/about')}><Ionicons name="chevron-back" size={24} color="#10376E" /></Pressable>
-          <Text style={s.headerTitle}>Cách hoạt động</Text><View style={s.back} />
+          <Text style={[s.headerTitle, typography.header]}>Cách hoạt động</Text><View style={s.back} />
         </View>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content}>
           <View style={s.hero}>
             
             <View style={s.heroRow}>
-              <Text accessibilityRole="header" style={s.heroTitle}>Bắt đầu từ{ '\n' }<Text style={s.pink}>một điều tốt.</Text></Text>
-              <View style={s.artFrame} accessible accessibilityLabel="Kết nối cộng đồng" accessibilityRole="image">
-                <LinearGradient colors={['#F9E3F4', '#E3EDFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.communityMark}>
-                  <Ionicons name="people-outline" size={37} color="#6960B7" />
-                </LinearGradient>
-              </View>
+              <Text accessibilityRole="header" style={[s.heroTitle, typography.hero]}>Bắt đầu từ{ '\n' }<Text style={[s.pink, typography.accent]}>một điều tốt.</Text></Text>
+              <Image source={require('../../../assets/about/join/join-volunteer.png')} style={{ width: 90, height: 100, borderRadius: 28 }} resizeMode="cover" accessibilityLabel="Những bàn tay cùng tham gia hoạt động" />
             </View>
             <View style={s.accentLine} />
             <Text style={s.eyebrow}>BỐN BƯỚC CÙNG NOI</Text>
@@ -67,7 +66,7 @@ export default function HowItWorksScreen() {
             </View>
             <View style={s.finish}>
               <Text style={s.quote}>Sẵn sàng cho bước đầu tiên?</Text>
-              <Pressable accessibilityRole="button" onPress={() => router.navigate('/')} style={s.cta}>{({ pressed }) => <><ActionBackground pressed={pressed} radius={16} /><Text style={s.ctaText}>Khám phá chiến dịch</Text><Ionicons name="arrow-forward" size={18} color="#353959" /></>}</Pressable>
+              <Pressable accessibilityRole="button" onPress={() => router.navigate('/')} style={[s.cta, { overflow: 'hidden', borderColor: 'transparent' }]}>{({ pressed }) => <><ActionBackground pressed={pressed} radius={16} /><Text style={[s.ctaText, { color: buttonTheme.buttons.primaryText }]}>Khám phá chiến dịch</Text><Ionicons name="arrow-forward" size={18} color={buttonTheme.buttons.primaryText} /></>}</Pressable>
             </View>
           </View>
         </ScrollView>
@@ -115,3 +114,4 @@ const styles = (u: number) => StyleSheet.create({
   cta: { minHeight: 48, padding: 14, borderRadius: 16, overflow: 'hidden', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   ctaText: { fontSize: 15, fontWeight: '700', color: '#353959', flexShrink: 1 },
 });
+

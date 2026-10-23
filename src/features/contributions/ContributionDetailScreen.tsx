@@ -1,6 +1,8 @@
+import { ActionBackground as BrandActionBackground , ActionBackground } from '../../components/ui';
+import { theme as buttonTheme , theme } from '../../theme/tokens';
 import { useAssistant, useAssistantContext } from '../assistant/Assistant';
-import { ActionBackground } from "../../components/ui";
-import { theme } from "../../theme/tokens";
+
+
 import { useRef, useState, type ComponentProps, type ReactNode } from "react";
 import {
   Image,
@@ -131,10 +133,10 @@ export default function ContributionDetailScreen() {
       {/* CTA CỐ ĐỊNH */}
       <View style={s.bottomBar} onLayout={event => assistant.setBottomInset(event.nativeEvent.layout.height)}>
         <Pressable
-          style={({ pressed }) => [
+          style={(state) => [(({ pressed }) => [
             s.donateButton,
             pressed && { opacity: 1 },
-          ]}
+          ])(state), { overflow: 'hidden', borderColor: 'transparent' }]}
           onPress={() => {
             // Bước sau sẽ mở DonationPanel ở đây.
             router.push(`/contributions/donate/${campaign.id}`);
@@ -142,7 +144,7 @@ export default function ContributionDetailScreen() {
         >
 {({ pressed }) => <>
 <ActionBackground pressed={pressed} radius={8} />
-          <Text style={s.donateButtonText}>Đóng góp ngay</Text>
+          <Text style={[s.donateButtonText, { color: buttonTheme.buttons.primaryText }]}>Đóng góp ngay</Text>
 </>}
 </Pressable>
       </View>
@@ -204,8 +206,8 @@ function CampaignSummary({
             <Text style={s.organizationType}>Đơn vị tổ chức</Text>
           </View>
 
-          <Pressable style={s.followButton}>
-            <Text style={s.followText}>Theo dõi</Text>
+          <Pressable style={[s.followButton, { overflow: 'hidden', borderColor: 'transparent' }]}><BrandActionBackground radius={0} disabled={false} />
+            <Text style={[s.followText, { color: buttonTheme.buttons.primaryText }]}>Theo dõi</Text>
           </Pressable>
         </View>
 
@@ -321,10 +323,10 @@ function Introduction({ campaign }: { campaign: CampaignDetail }) {
 
       <Text style={s.paragraph}>{campaign.subtitle}</Text>
 
-      <Pressable style={s.readMoreButton}>
-        <Text style={s.readMore}>Xem thêm</Text>
+      <Pressable style={[s.readMoreButton, { overflow: 'hidden', backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' }]}>
+        <Text style={[s.readMore, { color: "#E54698" }]}>Xem thêm</Text>
 
-        <Ionicons name="chevron-forward" size={14} color="#347CD5" />
+        <Ionicons name="chevron-forward" size={14} color={"#E54698"} />
       </Pressable>
 
       <View style={s.infoGrid}>
@@ -467,10 +469,10 @@ function Gallery({ items }: { items: MediaItem[] }) {
   return (
     <>
       {/* NÚT XEM TẤT CẢ */}
-      <Pressable onPress={() => setGalleryVisible(true)} style={s.viewAllButton}>
-        <Text style={s.viewAll}>Xem tất cả {items.length} ảnh & video</Text>
+      <Pressable onPress={() => setGalleryVisible(true)} style={[s.viewAllButton, { overflow: 'hidden', borderColor: 'transparent' }]}><BrandActionBackground radius={0} disabled={false} />
+        <Text style={[s.viewAll, { color: buttonTheme.buttons.primaryText }]}>Xem tất cả {items.length} ảnh & video</Text>
 
-        <Ionicons name="chevron-forward" size={12} color="#347CD5" />
+        <Ionicons name="chevron-forward" size={12} color={buttonTheme.buttons.primaryText} />
       </Pressable>
 
       {/* DANH SÁCH ẢNH / VIDEO */}
@@ -805,14 +807,14 @@ function TimelinePost({
             </View>
 
             {/* XEM TẤT CẢ */}
-            <Pressable style={s.updateViewAll} onPress={openGallery}>
-              <Ionicons name="images-outline" size={16} color="#347CD5" />
+            <Pressable style={[s.updateViewAll, { overflow: 'hidden', backgroundColor: '#FFFFFF', borderColor: '#FFFFFF' }]} onPress={openGallery}>
+              <Ionicons name="images-outline" size={16} color={"#E54698"} />
 
-              <Text style={s.updateViewAllText}>
+              <Text style={[s.updateViewAllText, { color: "#E54698" }]}>
                 Xem tất cả {images.length} ảnh
               </Text>
 
-              <Ionicons name="chevron-forward" size={14} color="#347CD5" />
+              <Ionicons name="chevron-forward" size={14} color={"#E54698"} />
             </Pressable>
           </>
         )}
@@ -2569,3 +2571,4 @@ const s = StyleSheet.create({
     backgroundColor: "#F2F3F5",
   },
 });
+

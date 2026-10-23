@@ -66,6 +66,6 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     zIndex: 9999,
     elevation: 100,
-    backgroundColor: '#F8F1FC',
+    backgroundColor: '#FFFFFF',
   },
 });

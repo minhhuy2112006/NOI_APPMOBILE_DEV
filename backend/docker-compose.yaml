@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+
+    container_name: noi-postgres
+
+    environment:
+      POSTGRES_USER: noi
+      POSTGRES_PASSWORD: noi_dev_password
+      POSTGRES_DB: noi
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - noi_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U noi -d noi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    restart: unless-stopped
+
+volumes:
+  noi_postgres_data:

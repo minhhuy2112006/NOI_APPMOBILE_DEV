@@ -1,6 +1,10 @@
-import { donationSession } from './session';
+import { profileSession } from '../account/session';
+import { KissThanks } from './KissThanks';
+import { ActionBackground as BrandActionBackground } from '../../components/ui';
+import { theme as buttonTheme , theme } from '../../theme/tokens';
+import { donationSession, type DonationEntry } from './session';
 import { useAssistantContext } from '../assistant/Assistant';
-import { theme } from '../../theme/tokens';
+
 // ============================================================
 // DONATION FLOW SCREEN
 // Luồng đóng góp cho một chiến dịch
@@ -16,11 +20,9 @@ import { theme } from '../../theme/tokens';
 // 1. IMPORT
 // ============================================================
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import {
-  Animated,
-  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -119,6 +121,7 @@ export default function DonationFlowScreen() {
   // mặc định ở bước nhập số tiền.
   const [step, setStep] = useState<DonationStep>("amount");
   const historyRecorded = useRef(false);
+  const [receipt, setReceipt] = useState<DonationEntry | null>(null);
   useAssistantContext("Quyên góp", { donationStep: step, campaignId: id ?? null });
 
   // ----------------------------------------------------------
@@ -167,7 +170,7 @@ export default function DonationFlowScreen() {
   // Khi step = "success" thì không cần hiển thị header
   // và các bước 1 - 3 nữa.
   if (step === "success") {
-    return <SuccessStep campaign={campaign} amount={amount} method={method} />;
+    return <SuccessStep campaign={campaign} amount={amount} method={method} receipt={receipt} anonymous={anonymous} message={message} />;
   }
 
   // ==========================================================
@@ -256,7 +259,9 @@ export default function DonationFlowScreen() {
           onComplete={() => {
             if (historyRecorded.current) return;
             historyRecorded.current = true;
-            donationSession.set(current => [{ id: 'DEMO-' + Date.now().toString(36), target: campaign.title, amount, date: new Date().toLocaleString('vi-VN'), method: paymentLabel(method), source: 'demo' }, ...current]);
+            const entry: DonationEntry = { id: 'DEMO-' + Date.now().toString(36), target: campaign.title, amount, date: new Date().toLocaleString('vi-VN'), method: paymentLabel(method), source: 'demo' };
+            donationSession.set(current => [entry, ...current]);
+            setReceipt(entry);
             setStep("success");
           }}
         />
@@ -1129,13 +1134,17 @@ function BankTransferCard({ amount }: { amount: number }) {
 function SuccessStep({
   campaign,
   amount,
-  method,
+  method, receipt, anonymous, message,
 }: {
   campaign: CampaignDetail;
   amount: number;
   method: PaymentMethod;
+  receipt: DonationEntry | null;
+  anonymous: boolean;
+  message: string;
 }) {
   const [showFireworks, setShowFireworks] = useState(true);
+  const profile = profileSession.useValue();
   return (
     <SafeAreaView style={s.safe} edges={["top", "left", "right", "bottom"]}>
       {showFireworks && (
@@ -1153,11 +1162,7 @@ function SuccessStep({
             BIỂU TƯỢNG CẢM ƠN
             =================================================== */}
 
-        <View style={s.successArt}>
-          <View style={s.successCircle}>
-            <Ionicons name="heart" size={44} color={PINK} />
-          </View>
-        </View>
+        <KissThanks />
 
         {/* ===================================================
             TIÊU ĐỀ CẢM ƠN
@@ -1183,6 +1188,7 @@ function SuccessStep({
               Chiến dịch vừa được đóng góp
               ----------------------------------------------- */}
 
+          <ConfirmRow label="Người quyên góp" value={anonymous ? "Ẩn danh" : profile.name} highlight />
           <CampaignMiniCard campaign={campaign} compact />
 
           {/* -----------------------------------------------
@@ -1209,7 +1215,7 @@ function SuccessStep({
               backend trả về.
               ----------------------------------------------- */}
 
-          <ConfirmRow label="Thời gian" value="02/10/2026 09:41" />
+          <ConfirmRow label="Thời gian" value={receipt?.date ?? "—"} />
 
           {/* -----------------------------------------------
               Mã giao dịch
@@ -1219,7 +1225,12 @@ function SuccessStep({
               Không nên tự hard-code ở frontend.
               ----------------------------------------------- */}
 
-          <ConfirmRow label="Mã giao dịch" value="NOI202610020941" last />
+          <ConfirmRow label="Mã ghi nhận" value={receipt?.id ?? "—"} />
+          <ConfirmRow label="Đơn vị tiếp nhận" value={campaign.organization} />
+          <ConfirmRow label="Hình thức đóng góp" value="Tài chính" />
+          <ConfirmRow label="Hiển thị tên" value={anonymous ? "Ẩn danh" : "Công khai"} />
+          {message.trim() ? <ConfirmRow label="Lời nhắn" value={message.trim()} /> : null}
+          
         </View>
 
         {/* ===================================================
@@ -1230,8 +1241,7 @@ function SuccessStep({
           <Ionicons name="heart" size={25} color={PINK} />
 
           <Text style={s.successNoticeText}>
-            Đóng góp của bạn đã được ghi nhận và sẽ sớm hiển thị trên trang
-            chiến dịch.
+            Thông tin đóng góp đã được lưu trong lịch sử trên thiết bị. Xác nhận chuyển khoản cần được đơn vị tiếp nhận đối soát.
           </Text>
         </View>
 
@@ -1255,56 +1265,18 @@ function SuccessStep({
             điều hướng đến một trang chưa tồn tại.
             =================================================== */}
 
-        <Pressable
-          style={({ pressed }) => [
-            s.primarySuccessButton,
-            pressed && {
-              opacity: 1,
-            },
-          ]}
-        >
-{({ pressed }) => <>
-<LinearGradient
-            colors={(pressed ? theme.buttons.pressedGradient : theme.buttons.gradient)}
-            start={{
-              x: 0,
-              y: 0.5,
-            }}
-            end={{
-              x: 1,
-              y: 0.5,
-            }}
-            style={s.primarySuccessGradient}
-          >
-            <Text style={s.primarySuccessText}>Xem lịch sử đóng góp</Text>
-          </LinearGradient>
-</>}
-</Pressable>
-
-        {/* ===================================================
-            NÚT QUAY VỀ CHIẾN DỊCH
-            ===================================================
-            
-            Dùng router.replace thay vì router.push.
-            
-            Mục đích:
-            Không giữ màn hình success trong navigation stack,
-            tránh việc người dùng bấm Back rồi quay trở lại
-            màn "Cảm ơn bạn đã đóng góp".
-            =================================================== */}
-
-        <Pressable
-          onPress={() => router.replace(`/contributions/${campaign.id}`)}
-          style={({ pressed }) => [
-            s.secondaryButton,
-            pressed && {
-              opacity: 0.75,
-            },
-          ]}
-        >
-          <Text style={s.secondaryButtonText}>Về chiến dịch</Text>
-        </Pressable>
       </ScrollView>
+        <View style={s.successFooter}>
+          <Pressable accessibilityRole="button" onPress={() => router.replace({ pathname: '/account/[section]', params: { section: 'donations' } })} style={({ pressed }) => [s.successAction, { opacity: pressed ? 0.75 : 1 }]}>
+            <BrandActionBackground radius={12} />
+            <Text style={s.successActionText}>Xem lịch sử</Text>
+          </Pressable>
+          <Pressable accessibilityRole="button" onPress={() => router.replace(`/contributions/${campaign.id}`)} style={({ pressed }) => [s.successAction, { opacity: pressed ? 0.75 : 1 }]}>
+            <BrandActionBackground radius={12} />
+            <Text style={s.successActionText}>Về chiến dịch</Text>
+          </Pressable>
+        </View>
+
     </SafeAreaView>
   );
 }
@@ -1385,14 +1357,14 @@ function BottomButton({
     <View style={s.bottomBar}>
       <Pressable
         onPress={onPress}
-        style={({ pressed }) => [
+        style={(state) => [(({ pressed }) => [
           s.continuePressable,
           pressed && {
             opacity: 1,
           },
-        ]}
+        ])(state), { overflow: 'hidden', borderColor: 'transparent' }]}
       >
-{({ pressed }) => <>
+{({ pressed }) => <><BrandActionBackground radius={0} disabled={false} /><>
 <LinearGradient
           colors={(pressed ? theme.buttons.pressedGradient : theme.buttons.gradient)}
           start={{
@@ -1405,11 +1377,11 @@ function BottomButton({
           }}
           style={s.continueButton}
         >
-          <Text style={s.continueButtonText}>{title}</Text>
+          <Text style={[s.continueButtonText, { color: buttonTheme.buttons.primaryText }]}>{title}</Text>
 
-          <Ionicons name="arrow-forward" size={21} color={theme.buttons.primaryText} />
+          <Ionicons name="arrow-forward" size={21} color={buttonTheme.buttons.primaryText} />
         </LinearGradient>
-</>}
+</></>}
 </Pressable>
     </View>
   );
@@ -1440,6 +1412,9 @@ function BottomButton({
 // ============================================================
 
 const s = StyleSheet.create({
+  successFooter: { flexDirection: 'row', gap: 9, paddingHorizontal: 18, paddingTop: 8, paddingBottom: 6 },
+  successAction: { flex: 1, minHeight: 40, borderRadius: 12, overflow: 'hidden', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8, paddingVertical: 10 },
+  successActionText: { fontSize: 13, lineHeight: 18, fontWeight: '600', color: '#FFFFFF', textAlign: 'center' },
   // ==========================================================
   // A. LAYOUT CHUNG
   // ==========================================================
@@ -2282,7 +2257,6 @@ const s = StyleSheet.create({
 
   // Nội dung ScrollView của màn cảm ơn
   successContent: {
-    flexGrow: 1,
 
     paddingHorizontal: 18,
 
@@ -2433,3 +2407,4 @@ const s = StyleSheet.create({
     overflow: "hidden",
   },
 });
+

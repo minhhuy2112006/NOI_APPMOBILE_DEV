@@ -1,3 +1,5 @@
+import { ActionBackground as BrandActionBackground } from '../../components/ui';
+import { theme as buttonTheme } from '../../theme/tokens';
 import { type ComponentProps, type PropsWithChildren } from "react";
 import {
   KeyboardAvoidingView,
@@ -70,35 +72,37 @@ export function Action({
   icon,
   onPress,
   filled = false,
+  muted = false,
 }: {
   title: string;
   icon?: IconName;
   onPress: () => void;
   filled?: boolean;
+  muted?: boolean;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [
+      style={(state) => [(({ pressed }) => [
         s.action,
         filled && s.filled,
         { opacity: pressed ? 0.65 : 1 },
-      ]}
-    >
+      ])(state), { overflow: 'hidden', borderColor: 'transparent' }]}
+    >{muted ? <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: "#E7EFFC", borderWidth: 1, borderColor: "#BED0EE", borderRadius: 12 }]} /> : <BrandActionBackground radius={0} disabled={false} />}
       {icon && (
         <Icon
           name={icon}
           size={20}
-          color={filled ? "#fff" : pink}
+          color={muted ? "#39578F" : buttonTheme.buttons.primaryText}
         />
       )}
 
       <Text
-        style={[
+        style={[[
           s.actionText,
           filled && { color: "#fff" },
-        ]}
+        ], { color: muted ? "#39578F" : buttonTheme.buttons.primaryText }]}
       >
         {title}
       </Text>
@@ -107,7 +111,7 @@ export function Action({
         <Icon
           name="chevron-forward"
           size={16}
-          color={filled ? "#fff" : pink}
+          color={muted ? "#39578F" : buttonTheme.buttons.primaryText}
         />
       )}
     </Pressable>

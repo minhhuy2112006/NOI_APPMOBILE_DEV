@@ -1,3 +1,4 @@
+import { theme as buttonTheme } from '../../theme/tokens';
 import ParticipationEditorial from "./ParticipationEditorial";
 import HowItWorksScreen from "./HowItWorksScreen";
 import IntroductionScreen from "./IntroductionScreen";
@@ -195,24 +196,24 @@ function CTA({
   secondary?: boolean;
 }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={s.cta}>
+    <Pressable accessibilityRole="button" onPress={onPress} style={[s.cta, { overflow: 'hidden', borderColor: 'transparent' }]}>
       {({ pressed }) => (
         <>
           {secondary ? (
             <View
-              style={[
+              style={[[
                 StyleSheet.absoluteFill,
                 s.secondary,
                 pressed && { opacity: 0.7 },
-              ]}
+              ], { backgroundColor: 'transparent', borderColor: 'transparent' }]}
             />
           ) : (
             <ActionBackground pressed={pressed} radius={14} />
           )}
 
-          <Text style={s.ctaText}>{title}</Text>
+          <Text style={[s.ctaText, { color: buttonTheme.buttons.primaryText }]}>{title}</Text>
 
-          <Ionicons name="arrow-forward" size={17} color="#353959" />
+          <Ionicons name="arrow-forward" size={17} color={buttonTheme.buttons.primaryText} />
         </>
       )}
     </Pressable>
@@ -1319,3 +1320,4 @@ const s = StyleSheet.create({
     color: "#68738A",
   },
 });
+

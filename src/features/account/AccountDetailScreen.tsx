@@ -1,3 +1,6 @@
+import AccountUtilityScreen from './AccountUtilityScreen';
+import { LinearGradient } from 'expo-linear-gradient';
+import DonationsScreen from './DonationsScreen';
 import ProfileScreen from "./ProfileScreen";
 import RegistrationsScreen from "./RegistrationsScreen";
 import PointsScreen from "./PointsScreen";
@@ -153,26 +156,26 @@ function EditProfile() {
   };
   return (
     <>
-      <Card>
-        {fields.map((field) => (
-          <Field
-            key={field.key}
-            label={field.label}
-            multiline={field.multiline}
-            numeric={field.numeric}
-            value={draft[field.key]}
-            onChangeText={(value) =>
-              setDraft((current) => ({ ...current, [field.key]: value }))
-            }
-          />
-        ))}
-      </Card>
+      <LinearGradient colors={['#FFEAF5', '#EBEFFF', '#E6F3FF']} style={s.editHero}>
+        <Text style={s.eyebrow}>HỒ SƠ CỦA BẠN</Text>
+        <Text style={s.heading}>Thêm một chút về bạn</Text>
+        <Copy>Thông tin đầy đủ giúp NOI kết nối bạn với những hoạt động phù hợp.</Copy>
+      </LinearGradient>
+      {[
+        { title: 'Thông tin cá nhân', description: 'Để mọi người hiểu và kết nối với bạn.', from: 0, to: 6 },
+        { title: 'Liên hệ khẩn cấp', description: 'Người có thể liên hệ khi bạn cần hỗ trợ.', from: 6, to: 9 },
+        { title: 'Điều làm nên bạn', description: 'Chia sẻ thế mạnh và những điều bạn quan tâm.', from: 9, to: 12 },
+        { title: 'Hành trình thiện nguyện', description: 'Đặt một mục tiêu cho những việc tốt sắp tới.', from: 12, to: 15 },
+      ].map(group => <View key={group.title} style={s.editPanel}>
+        <Heading>{group.title}</Heading><Copy>{group.description}</Copy>
+        {fields.slice(group.from, group.to).map(field => <Field key={field.key} label={field.label} multiline={field.multiline} numeric={field.numeric} value={draft[field.key]} onChangeText={value => setDraft(current => ({ ...current, [field.key]: value }))} />)}
+      </View>)}
       {error ? (
         <Text accessibilityRole="alert" style={s.error}>
           {error}
         </Text>
       ) : null}
-      <Button title="Lưu hồ sơ demo" onPress={save} />
+      <Button title="Lưu thay đổi" onPress={save} />
     </>
   );
 }
@@ -265,14 +268,16 @@ export default function AccountDetailScreen() {
     source: "demo",
   });
   const title = section ? sections[section] : "Không tìm thấy trang";
+  if (session.active && section && (section === 'password' || section === 'security' || section === 'devices' || section === 'terms' || section === 'privacy')) return <AccountUtilityScreen section={section} />;
   if (session.active && section === "profile") return <ProfileScreen />;
   if (session.active && section === "settings") return <SettingsScreen />;
   if (session.active && section === "support") return <SupportScreen />;
   if (session.active && section === "registrations")
     return <RegistrationsScreen />;
   if (session.active && section === "points") return <PointsScreen />;
+  if (session.active && section === "donations") return <DonationsScreen />;
   return (
-    <SafeAreaView edges={["top", "left", "right"]} style={s.page}>
+    <LinearGradient colors={["#FFF0F8", "#F1EDFD", "#E5F3FF"]} style={s.fill}><SafeAreaView edges={["top", "left", "right", "bottom"]} style={s.page}>
       <Stack.Screen options={{ headerShown: false }} />
       <View style={s.header}>
         <Pressable
@@ -322,10 +327,13 @@ export default function AccountDetailScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </SafeAreaView></LinearGradient>
   );
 }
 const s = StyleSheet.create({
+  editHero: { padding: 20, borderRadius: 22, gap: 9, borderWidth: 1, borderColor: '#FFFFFF' },
+  eyebrow: { color: '#AD6699', fontSize: 10, fontWeight: '700', letterSpacing: 1.5 },
+  editPanel: { padding: 14, borderRadius: 22, gap: 10, backgroundColor: '#FFFFFFDD', borderWidth: 1, borderColor: '#FFFFFF' },
   segment: {
     flexDirection: "row",
     backgroundColor: "#ECEEF6",
@@ -352,7 +360,7 @@ const s = StyleSheet.create({
     gap: 8,
   },
   fill: { flex: 1 },
-  page: { flex: 1, backgroundColor: "#F8F7FC" },
+  page: { flex: 1 },
   header: { flexDirection: "row", alignItems: "center", paddingRight: 16 },
   back: {
     minWidth: 48,
@@ -367,18 +375,21 @@ const s = StyleSheet.create({
     fontSize: 21,
     fontWeight: "700",
     paddingVertical: 10,
+    textAlign: "center",
+    marginRight: 32,
   },
   content: {
     width: "100%",
     maxWidth: 640,
     alignSelf: "center",
-    padding: 16,
-    gap: 14,
-    paddingBottom: 20,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    gap: 10,
+    paddingBottom: 8,
   },
   heading: {
-    fontSize: 19,
-    lineHeight: 27,
+    fontSize: 18,
+    lineHeight: 24,
     color: theme.colors.text,
     fontWeight: "700",
   },
@@ -424,3 +435,4 @@ const s = StyleSheet.create({
   error: { color: "#AD3045" },
   faq: { minHeight: 44, justifyContent: "center" },
 });
+

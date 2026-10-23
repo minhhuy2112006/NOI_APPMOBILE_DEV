@@ -1,3 +1,6 @@
+import { useAboutTypography } from './aboutTypography';
+import { ActionBackground as BrandActionBackground } from '../../components/ui';
+import { theme as buttonTheme } from '../../theme/tokens';
 import { useMemo, useState } from "react";
 import {
   Image,
@@ -288,27 +291,27 @@ function OrganizationCard({
           </View>
 
           <Pressable
-            style={({ pressed }) => [
+            style={(state) => [(({ pressed }) => [
               styles.detailButtonWrap,
               pressed && {
                 opacity: 0.85,
               },
-            ]}
-          >
+            ])(state), { overflow: 'hidden', borderColor: 'transparent' }]}
+          ><BrandActionBackground radius={0} disabled={false} />
             <LinearGradient
-              colors={["#F2B3E3", "#B7D1FF"]}
+              colors={buttonTheme.buttons.gradient}
               start={{ x: 0, y: 0.5 }}
               end={{ x: 1, y: 0.5 }}
               style={styles.detailButton}
             >
-              <Text style={styles.detailButtonText}>
+              <Text style={[styles.detailButtonText, { color: buttonTheme.buttons.primaryText }]}>
                 Xem tổ chức
               </Text>
 
               <Ionicons
                 name="arrow-forward"
                 size={17}
-                color="#3F467E"
+                color={buttonTheme.buttons.primaryText}
               />
             </LinearGradient>
           </Pressable>
@@ -323,6 +326,7 @@ function OrganizationCard({
 ========================================================= */
 
 export default function OrganizationsScreen() {
+  const typography = useAboutTypography();
   const [page, setPage] = useState(0);
   const [showAll, setShowAll] = useState(false);
   const [search, updateSearch] = useState("");
@@ -410,7 +414,7 @@ export default function OrganizationsScreen() {
 />
             </Pressable>
 
-            <Text style={styles.headerTitle}>
+            <Text style={[styles.headerTitle, typography.header]}>
               Tổ chức
             </Text>
 
@@ -424,19 +428,15 @@ export default function OrganizationsScreen() {
 
           <View style={styles.hero}>
             <View style={styles.heroContent}>
-              <Text style={styles.heroTitle}>
+              <Text style={[styles.heroTitle, typography.hero]}>
                 Những đối tác{"\n"}
-                <Text style={styles.heroHighlight}>
+                <Text style={[styles.heroHighlight, typography.accent]}>
                   đồng hành{"\n"}cùng NOI
                 </Text>
               </Text>
             </View>
 
-            <View style={styles.partnerIcon} accessible accessibilityLabel="Tổ chức đồng hành">
-              <LinearGradient colors={['#F8E0F2', '#E0ECFF']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.partnerIconInner}>
-                <Ionicons name="business-outline" size={35} color="#7260B4" />
-              </LinearGradient>
-            </View>
+            <Image source={require('../../../assets/about/mission/mission-hands.png')} style={{ position: 'absolute', right: 0, top: 6, width: '30%', height: 112, borderRadius: 26 }} resizeMode="cover" accessibilityLabel="Các tổ chức chung tay cùng cộng đồng" />
           </View>
 
           {/* =================================================
@@ -504,12 +504,9 @@ export default function OrganizationsScreen() {
                     onPress={() =>
                       setSelectedCategory(item.id)
                     }
-                  >
+                  ><BrandActionBackground radius={0} disabled={false} />
                     <LinearGradient
-                      colors={[
-                        "#F2B3E3",
-                        "#B7D1FF",
-                      ]}
+                      colors={buttonTheme.buttons.gradient}
                       start={{ x: 0, y: 0.5 }}
                       end={{ x: 1, y: 0.5 }}
                       style={
@@ -520,14 +517,12 @@ export default function OrganizationsScreen() {
                         <Ionicons
                           name={item.icon as any}
                           size={16}
-                          color="#444683"
+                          color={buttonTheme.buttons.primaryText}
                         />
                       )}
 
                       <Text
-                        style={
-                          styles.categoryActiveText
-                        }
+                        style={[styles.categoryActiveText, { color: buttonTheme.buttons.primaryText }]}
                       >
                         {item.label}
                       </Text>
@@ -607,7 +602,7 @@ export default function OrganizationsScreen() {
                 <Text style={styles.pageLabel}>{showAll ? 'Tất cả' : `${currentPage + 1} / ${pageCount}`}</Text>
                 <Pressable accessibilityRole="button" accessibilityLabel="Trang tổ chức tiếp theo" accessibilityState={{ disabled: showAll || currentPage >= pageCount - 1 }} disabled={showAll || currentPage >= pageCount - 1} onPress={() => setPage(currentPage + 1)} style={[styles.pageArrow, (showAll || currentPage >= pageCount - 1) && styles.pageDisabled]}><Ionicons name="arrow-forward" size={19} color="#63559D" /></Pressable>
               </View>
-              {filteredOrganizations.length > 3 && <Pressable accessibilityRole="button" onPress={() => { setShowAll(!showAll); setPage(0); }} style={styles.viewAll}><Text style={styles.pageLabel}>{showAll ? 'Thu gọn' : `Xem tất cả (${filteredOrganizations.length})`}</Text></Pressable>}
+              {filteredOrganizations.length > 3 && <Pressable accessibilityRole="button" onPress={() => { setShowAll(!showAll); setPage(0); }} style={[styles.viewAll, { overflow: 'hidden', borderColor: 'transparent' }]}><BrandActionBackground radius={0} disabled={false} /><Text style={[styles.pageLabel, { color: buttonTheme.buttons.primaryText }]}>{showAll ? 'Thu gọn' : `Xem tất cả (${filteredOrganizations.length})`}</Text></Pressable>}
             </View>
           ) : (
             <View style={styles.emptyState}>
@@ -633,17 +628,14 @@ export default function OrganizationsScreen() {
                   setSearch("");
                   setSelectedCategory("all");
                 }}
-              >
+              ><BrandActionBackground radius={0} disabled={false} />
                 <LinearGradient
-                  colors={[
-                    "#F2B3E3",
-                    "#B7D1FF",
-                  ]}
+                  colors={buttonTheme.buttons.gradient}
                   start={{ x: 0, y: 0.5 }}
                   end={{ x: 1, y: 0.5 }}
                   style={styles.resetButton}
                 >
-                  <Text style={styles.resetButtonText}>
+                  <Text style={[styles.resetButtonText, { color: buttonTheme.buttons.primaryText }]}>
                     Xem tất cả
                   </Text>
                 </LinearGradient>

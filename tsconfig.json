@@ -3,4 +3,9 @@
   "compilerOptions": {
     "strict": true
   }
+  ,
+  "exclude": [
+    "node_modules",
+    "backend"
+  ]
 }

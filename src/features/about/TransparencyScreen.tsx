@@ -1,4 +1,6 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useAboutTypography } from './aboutTypography';
+import { theme } from "../../theme/tokens";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -36,6 +38,7 @@ const transparencyItems = [
 ];
 
 export default function TransparencyScreen() {
+  const typography = useAboutTypography();
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -54,16 +57,16 @@ export default function TransparencyScreen() {
                 <Ionicons name="chevron-back" size={26} color="#122453" />
               </Pressable>
 
-              <Text style={s.headerTitle}>Cam kết minh bạch</Text>
+              <Text style={[s.headerTitle, typography.header]}>Cam kết minh bạch</Text>
 
               <View style={s.headerSpace} />
             </View>
 
             <View style={s.hero}>
   <View style={s.heroCopy}>
-    <Text style={s.heroTitle}>
+    <Text style={[s.heroTitle, typography.hero]}>
     Minh bạch để{"\n"}
-  lan tỏa <Text style={s.heroPink}>niềm tin</Text>
+  lan tỏa <Text style={[s.heroPink, typography.accent]}>niềm tin</Text>
     </Text>
 
     <Text style={s.heroDescription}>
@@ -71,28 +74,7 @@ export default function TransparencyScreen() {
     </Text>
   </View>
 
-  <View style={s.shieldArt} pointerEvents="none">
-    <View style={s.shieldGlow} />
-
-    <Ionicons
-      name="shield-outline"
-      size={77}
-      color="#A98CEB"
-    />
-
-    <View style={s.shieldChart}>
-      <View style={[s.bar, { height: 19 }]} />
-      <View style={[s.bar, { height: 31 }]} />
-      <View style={[s.bar, { height: 24 }]} />
-    </View>
-
-    <Ionicons
-      name="sparkles"
-      size={15}
-      color="#C781DE"
-      style={s.shieldSparkle}
-    />
-  </View>
+  <Image source={require('../../../assets/about/standard/standards-honesty.png')} style={{ position: 'absolute', right: 0, top: 0, width: '30%', height: 110, borderRadius: 25 }} resizeMode="cover" accessibilityLabel="Ghi chép và công khai thông tin minh bạch" />
 </View>
 
             <View style={s.list}>
@@ -124,13 +106,13 @@ export default function TransparencyScreen() {
 
             <Pressable style={({ pressed }) => pressed && { opacity: 0.88 }}>
               <LinearGradient
-                colors={["#F2B3E3", "#B7D1FF"]}
+                colors={theme.buttons.gradient}
                 start={{ x: 0, y: 0.5 }}
                 end={{ x: 1, y: 0.5 }}
                 style={s.cta}
               >
-                <Text style={s.ctaText}>Xem báo cáo minh bạch</Text>
-                <Ionicons name="arrow-forward" size={21} color="#343A70" />
+                <Text style={[s.ctaText, { color: theme.buttons.primaryText }]}>Xem báo cáo minh bạch</Text>
+                <Ionicons name="arrow-forward" size={21} color={theme.buttons.primaryText} />
               </LinearGradient>
             </Pressable>
           </ScrollView>
@@ -179,7 +161,7 @@ const s = StyleSheet.create({
   },
   
   heroCopy: {
-    width: "76%",
+    width: "66%",
   },
   
   shieldArt: {

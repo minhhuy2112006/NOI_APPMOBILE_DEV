@@ -1,3 +1,4 @@
+import { useAboutTypography } from './aboutTypography';
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -17,6 +18,7 @@ import { introductionCopy } from "./introductionCopy";
 /** Dedicated editorial layout: the original reference is 853 px wide.
  * Text remains native and scalable; only the decorative hero is an image. */
 export default function IntroductionScreen() {
+  const typography = useAboutTypography();
   const { width } = useWindowDimensions();
   const scale = Math.min(width, 520) / 853;
   const s = styles(scale);
@@ -47,7 +49,7 @@ export default function IntroductionScreen() {
           >
             <Ionicons name="chevron-back" size={24} color="#0C185C" />
           </Pressable>
-          <Text style={s.headerTitle}>Về NOI</Text>
+          <Text style={[s.headerTitle, typography.header]}>Về NOI</Text>
           <View style={s.back} />
         </View>
         <ScrollView

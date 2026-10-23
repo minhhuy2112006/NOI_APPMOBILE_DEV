@@ -1,18 +1,19 @@
-import { ActivityPhoto, StatusPill } from '../../components/ActivityPresentation';
+import { TaskCard, TaskDetail, TaskAction } from './TaskPresentation';
+import { LinearGradient } from 'expo-linear-gradient';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAssistantContext } from '../assistant/Assistant';
 import { scheduleSession } from '../schedule/demo';
 import { linkedAssignments } from '../schedule/model';
 import { useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { Button, Card, Chip, typography } from '../../components/ui';
 import { theme } from '../../theme/tokens';
-import { allowedActions, assignTask, canManage, context, createGroup, displayStatus, labels, transition, type Assignment, type Command, type Snapshot, type TaskDraft } from './model';
+import { allowedActions, assignTask, canManage, context, createGroup, transition, type Assignment, type Command, type Snapshot, type TaskDraft } from './model';
 import { demoSession } from './demo';
 
 type Mode = 'mine' | 'review' | 'progress' | 'assign' | 'group';
-const date = (value: string) => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
 const parseDate = (value: string) => {
   if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(value)) return '';
   const parsed = new Date(value.replace(' ', 'T') + ':00+07:00');
@@ -60,34 +61,20 @@ export default function AssignmentsScreen() {
   };
   const field = (label: string, value: string, change: (v: string) => void, multiline = false) => <View style={s.field}><Text style={s.label}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={change} style={[s.input, multiline && s.multiline]} multiline={multiline} maxLength={multiline ? 2000 : 500} /></View>;
   const card = (a: Assignment, detailed = false) => {
-    const { task, group: taskGroup } = context(data, a);
-    const status = displayStatus(a, task);
     const actions = allowedActions(data, actor, a);
-    if (!detailed) return <Card key={a.id}><View style={{ flexDirection: 'row', gap: 12 }}><ActivityPhoto campaignId={taskGroup.campaign_id} compact /><View style={{ flex: 1, gap: 6 }}><Text style={s.label}>{task.title}</Text><Text style={s.body}>{task.location}</Text><Text style={s.body}>{date(task.starts_at)}</Text></View></View><StatusPill label={labels[status]} tone={a.status === 'HOAN_THANH' ? 'success' : status === 'QUA_HAN' || a.status === 'CHO_XAC_NHAN' ? 'warning' : a.status === 'CAN_THUC_HIEN_LAI' ? 'error' : 'info'} /><Button title="Xem chi tiết công việc" onPress={() => setSelectedId(a.id)} /></Card>;
-    return <Card key={a.id}>
-      <ActivityPhoto campaignId={taskGroup.campaign_id} />
-      <Text style={typography.heading}>{task.title}</Text>
-      <Text style={[s.status, a.status === 'HOAN_THANH' && s.success, status === 'QUA_HAN' && s.warning]}>{labels[status]}{status === 'QUA_HAN' ? ` · ${labels[a.status]}` : ''}</Text>
-      <Text style={s.body}>{data.campaigns.find(c => c.id === taskGroup.campaign_id)?.title}</Text>
-      <Text style={s.body}>{taskGroup.name} · Trưởng nhóm: {name(taskGroup.leader_id)}</Text>
-      <Text style={s.body}>Thành viên: {name(a.member_id)}</Text>
-      <Text style={s.body}>{task.description}</Text>
-      <Text style={s.body}>Thời gian: {date(task.starts_at)} – {date(task.ends_at)}</Text>
-      <Text style={s.body}>Địa điểm: {task.location}</Text>
-      <Text style={s.body}>Deadline: {task.deadline ? date(task.deadline) : 'Không có'}</Text>
-      {task.requirements ? <Text style={s.body}>Yêu cầu: {task.requirements}</Text> : null}
-      {a.rework_reason ? <Text style={s.warning}>Lý do yêu cầu làm lại gần nhất: {a.rework_reason}</Text> : null}
-      {a.confirmed_by && a.confirmed_at ? <Text style={s.success}>Xác nhận bởi {name(a.confirmed_by)} · {date(a.confirmed_at)}</Text> : null}
-      {actions.includes('start') && <Button title={a.status === 'CAN_THUC_HIEN_LAI' ? 'Bắt đầu thực hiện lại' : 'Bắt đầu công việc'} onPress={() => act(a, 'start')} />}
-      {actions.includes('submit') && <Button title="Gửi xác nhận hoàn thành" onPress={() => act(a, 'submit')} />}
-      {actions.includes('confirm') && <Button title="Xác nhận hoàn thành" onPress={() => act(a, 'confirm')} />}
+    if (!detailed) return <TaskCard key={a.id} data={data} assignment={a} actor={actor} open={() => setSelectedId(a.id)} />;
+    return <TaskDetail key={a.id} data={data} assignment={a}>
+      {actions.includes('start') && <TaskAction title={a.status === 'CAN_THUC_HIEN_LAI' ? 'Bắt đầu thực hiện lại' : 'Bắt đầu công việc'} onPress={() => act(a, 'start')} />}
+      {actions.includes('submit') && <TaskAction title="Gửi xác nhận hoàn thành" onPress={() => act(a, 'submit')} />}
+      {a.member_id === actor.id && ['CHO_XAC_NHAN', 'HOAN_THANH'].includes(a.status) && <TaskAction title={a.status === 'CHO_XAC_NHAN' ? 'Đã gửi xác nhận hoàn thành' : 'Đã hoàn thành'} disabled onPress={() => {}} />}
+      {actions.includes('confirm') && <TaskAction title="Xác nhận hoàn thành" onPress={() => act(a, 'confirm')} />}
       {actions.includes('rework') && <Button title="Yêu cầu thực hiện lại" onPress={() => { setReasonId(a.id); setReason(''); setError(''); }} />}
       {reasonId === a.id && actions.includes('rework') && <View style={s.field}>
         {field('Lý do thực hiện lại (bắt buộc)', reason, setReason, true)}
         <Button title="Gửi yêu cầu làm lại" disabled={!reason.trim()} onPress={() => act(a, 'rework')} />
         <Button title="Hủy" onPress={() => setReasonId(null)} />
       </View>}
-    </Card>;
+    </TaskDetail>;
   };
   const visible = data.assignments.filter(a => mode === 'mine' ? a.member_id === actor.id && (!filterCampaign || context(data, a).group.campaign_id === filterCampaign) && (!milestoneId || (!!milestone && linkedAssignments(milestone, data).some(item => item.id === a.id))) : allowedActions(data, actor, a).includes('confirm'));
   useAssistantContext('Công việc', { view: mode, activity: milestone?.title ?? null, tasks: (mode === 'progress' ? data.assignments.filter(a => canManage(data, actor, context(data, a).group)) : mode === 'mine' || mode === 'review' ? visible : []).slice(0, 30).map(a => { const { task, group } = context(data, a); return { id: a.id, taskId: task.id, title: task.title, status: a.status, deadline: task.deadline, leader: name(group.leader_id) }; }) });
@@ -141,17 +128,19 @@ export default function AssignmentsScreen() {
         }} />
       </Card>}
     </ScrollView>
-    <Modal visible={selectedId !== null} animationType="slide" onRequestClose={() => setSelectedId(null)}><SafeAreaProvider><SafeAreaView style={s.fill}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}><Button title="Quay lại danh sách" onPress={() => setSelectedId(null)} /><Text style={typography.heading}>Chi tiết công việc</Text>{error ? <Text accessibilityRole="alert" style={s.error}>{error}</Text> : null}{notice ? <Text accessibilityLiveRegion="polite" style={s.success}>{notice}</Text> : null}{data.assignments.filter(a => a.id === selectedId && (a.member_id === actor.id || canManage(data, actor, context(data, a).group))).map(a => card(a, true))}</ScrollView></SafeAreaView></SafeAreaProvider></Modal>
+    <Modal visible={selectedId !== null} animationType="slide" onRequestClose={() => { setSelectedId(null); if (assignmentId) router.back(); }}><SafeAreaProvider><LinearGradient colors={['#FFF0F8', '#F3EEFF', '#EBF2FF']} style={{ flex: 1 }}><SafeAreaView style={{ flex: 1 }}><View style={s.detailHeader}><Pressable accessibilityRole="button" accessibilityLabel="Quay lại danh sách công việc" onPress={() => { setSelectedId(null); if (assignmentId) router.back(); }} style={s.detailBack}><Ionicons name="chevron-back" size={28} color="#ED1685"/></Pressable><Text style={s.detailTitle}>Chi tiết công việc</Text><View style={s.detailBack}/></View><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.detailContent}>{error ? <Text accessibilityRole="alert" style={s.error}>{error}</Text> : null}{data.assignments.filter(a => a.id === selectedId && (a.member_id === actor.id || canManage(data, actor, context(data, a).group))).map(a => card(a, true))}</ScrollView></SafeAreaView></LinearGradient></SafeAreaProvider></Modal>
   </SafeAreaView>;
 }
 const s = StyleSheet.create({
+  detailHeader: { flexDirection: 'row', alignItems: 'center', minHeight: 58 }, detailBack: { width: 46, height: 46, alignItems: 'center', justifyContent: 'center' }, detailTitle: { flex: 1, textAlign: 'center', color: '#111111', fontSize: 20, fontWeight: '700' }, detailContent: { padding: 14, paddingBottom: 20, gap: 12, width: '100%', maxWidth: 700, alignSelf: 'center' },
   fill: { flex: 1, backgroundColor: theme.colors.background },
   content: { padding: 16, paddingBottom: 84, gap: 16, width: '100%', maxWidth: 680, alignSelf: 'center' },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, field: { gap: 10 },
   label: { fontSize: 14, fontWeight: '700', color: theme.colors.text }, body: { fontSize: 14, lineHeight: 21, color: theme.colors.muted },
   input: { borderWidth: 1, borderColor: theme.colors.border, borderRadius: 12, padding: 12, minHeight: 48, color: theme.colors.text, backgroundColor: theme.colors.surface },
-  multiline: { minHeight: 88, textAlignVertical: 'top' }, status: { color: theme.buttons.primaryText, fontWeight: '700' },
+  multiline: { minHeight: 88, textAlignVertical: 'top' }, status: { color: theme.colors.text, fontWeight: '700' },
   success: { color: '#267050', lineHeight: 21 }, warning: { color: '#915F16', lineHeight: 21 }, error: { color: '#B12E46', lineHeight: 21 },
 });
+
 
 
